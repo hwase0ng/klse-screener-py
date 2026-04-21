@@ -55,7 +55,6 @@ from .financials import (
     get_klse_quarterly_financials_dict,
     get_klse_annual_financials_dict,
     get_klse_fundamentals_mf_enhanced,
-    get_klse_fundamentals_combined,  # Deprecated alias
 )
 
 # NEW: Price history (pandas-free)
@@ -123,7 +122,6 @@ __all__ = [
     "get_klse_quarterly_financials_dict",
     "get_klse_annual_financials_dict",
     "get_klse_fundamentals_mf_enhanced",  # Recommended for Magic Formula
-    "get_klse_fundamentals_combined",  # Deprecated (alias)
     # NEW: Price history (pandas-free)
     "scrape_ohlcv_raw",
     "get_klse_price_history",

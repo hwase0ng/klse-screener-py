@@ -518,24 +518,6 @@ def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-# Convenience alias for backward compatibility
-def get_klse_fundamentals_combined(ticker: str) -> Dict[str, Any]:
-    """
-    DEPRECATED: Use get_klse_fundamentals_mf_enhanced() instead.
-    
-    This function exists for backward compatibility.
-    Will be removed in v2.0.
-    """
-    import warnings
-    warnings.warn(
-        "get_klse_fundamentals_combined() is deprecated and will be removed in v2.0. "
-        "Use get_klse_fundamentals_mf_enhanced() for Magic Formula enhanced data.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return get_klse_fundamentals_mf_enhanced(ticker)
-
-
 # Convenience alias for backward compatibility with beatit
 def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
     """
