@@ -17,11 +17,6 @@ Malaysian (KLSE/Bursa Malaysia) stock data scraper. Fetch fundamentals, trading 
 pip install klse-screener-py
 ```
 
-Or from source:
-```bash
-pip install git+ssh://hwaseong@192.168.67.7:4222/volume1/git-repos/klse-screener-py
-```
-
 ## Quick Start
 
 ```python

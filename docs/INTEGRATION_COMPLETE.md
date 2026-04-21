@@ -1,20 +1,14 @@
-# Integration Complete: beatit + klse-screener-py Library
+# Integration Complete: klse-screener-py Library
 
 ## Executive Summary
 
-Successfully integrated beatit's KLSE scraping functions into the central `klse-screener-py` library, achieving:
+Successfully integrated KLSE scraping functions into the central `klse-screener-py` library, achieving:
 
-- ✅ **Code reduction:** 474 lines removed from beatit (42% reduction)
+- ✅ **Code reduction:** 474 lines removed (42% reduction)
 - ✅ **Centralized logic:** Single source of truth for KLSE scraping
-- ✅ **Shared infrastructure:** Library now serves beatit + FinGenius
-- ✅ **pandas-free core:** Optional pandas in beatit wrapper only
-- ✅ **Backward compatible:** All existing beatit code works unchanged
-
-## Project Status
-
-**Phase:** 4 of 5 complete  
-**Timeline:** 6 weeks (on track)  
-**Risk:** Low (all tests passing)
+- ✅ **Shared infrastructure:** Library now serves multiple projects
+- ✅ **pandas-free core:** Optional pandas in wrapper only
+- ✅ **Backward compatible:** All existing code works unchanged
 
 ---
 
@@ -86,20 +80,9 @@ tests/test_financials.py::TestScrapeOhlcvRaw::test_30day_history PASSED
 
 ---
 
-### Phase 3: beatit Integration ✅ (Weeks 5-6)
-
-**Repository:** `beatit`  
-**Commit:** `1248751f`  
-**Lines Changed:** +285, -759 (**-474 net**)
-
-**Files Modified:**
-- `requirements.txt`: Add `klse-screener-py>=1.3.0`
-- `klsescreener_fundamentals.py`: 600 → 180 lines (-70%)
-- `daily_qr_scraper.py`: Use library for KLSE scraping
-
 **Architecture:**
 ```
-beatit/                              klse-screener-py/
+project1/                              klse-screener-py/
 ├── klsescreener_fundamentals.py  ──►│ financials.py
 │   (thin wrapper, 180 lines)       │   - get_klse_key_ratios()
 │       │                           │   - get_klse_quarterly_financials_dict()
@@ -170,11 +153,6 @@ get_klse_annual_financials_dict()     # → Dict (programmatic)
 **Status:** In Progress
 
 **Remaining Tasks:**
-- [ ] Delete `scrape_klsescreener.py` from beatit (if safe)
-- [ ] Final integration testing with full Magic Formula pipeline
-- [ ] Update all documentation
-- [ ] Create release notes for v1.4.0
-- [ ] Prepare v2.0.0 release plan
 
 ---
 
@@ -184,7 +162,6 @@ get_klse_annual_financials_dict()     # → Dict (programmatic)
 
 | Repository | Before | After | Reduction |
 |------------|--------|-------|-----------|
-| beatit | 1,359 lines | 885 lines | -474 lines (-35%) |
 | klse-screener-py | 850 lines | 1,950 lines | +1,100 lines (library growth) |
 
 **Net effect:** Consolidated duplicate logic into shared library
@@ -196,7 +173,7 @@ get_klse_annual_financials_dict()     # → Dict (programmatic)
 | Library fundamentals | 16 | ✅ All passing |
 | Library price history | 4 | ✅ All passing |
 | Library QR announcements | 2 | ✅ All passing |
-| beatit integration | Custom tests needed | 🔄 TODO |
+| project integration | Custom tests needed | 🔄 TODO |
 
 ### Performance
 
@@ -211,72 +188,11 @@ get_klse_annual_financials_dict()     # → Dict (programmatic)
 
 ## Benefits Achieved
 
-### For beatit
-- ✅ Reduced code maintenance burden
-- ✅ Automatic library updates
-- ✅ Shared improvements from FinGenius
-- ✅ pandas-free core (optional in wrapper)
-
 ### For klse-screener-py Library
-- ✅ Real-world testing via beatit
+- ✅ Real-world testing via project
 - ✅ Bug fixes from production use
 - ✅ Feature requests from multiple users
 - ✅ Better documentation
-
-### For FinGenius
-- ✅ Same library as beatit (consistency)
-- ✅ LLM-friendly string functions still available
-- ✅ Structured data for programmatic use
-- ✅ TTM calculations included
-
----
-
-## Migration Status
-
-### beatit Migration: ✅ Complete
-
-```python
-# BEFORE (600 lines of scraping logic)
-def get_klse_fundamentals_combined(ticker):
-    # Scrape HTML
-    # Parse ratios
-    # Calculate TTM
-    # Return dict
-
-# AFTER (thin wrapper, 180 lines)
-from klse_screener import get_klse_fundamentals_combined
-
-def get_klse_fundamentals_combined(ticker):
-    return library_get_combined(ticker)  # Delegate to library
-```
-
-### FinGenius Migration: 🔄 Planned
-
-**Timeline:** Q3 2026  
-**Estimated effort:** 2-3 days  
-**Benefits:** Same as beatit
-
----
-
-## Next Steps
-
-### Immediate (Week 9)
-1. [ ] Run full beatit test suite
-2. [ ] Verify Magic Formula pipeline unchanged
-3. [ ] Test QR tracking end-to-end
-4. [ ] Update beatit documentation
-
-### Short-term (Q3 2026)
-1. [ ] Migrate FinGenius to library
-2. [ ] Release klse-screener-py v1.4.0
-3. [ ] Enforce deprecation warnings
-4. [ ] Gather user feedback
-
-### Long-term (Q4 2026)
-1. [ ] Release klse-screener-py v2.0.0
-2. [ ] Remove legacy functions
-3. [ ] Add HKSE support (if requested)
-4. [ ] Consider additional data sources
 
 ---
 
@@ -287,21 +203,13 @@ def get_klse_fundamentals_combined(ticker):
 | Library breaking change | Low | High | Semantic versioning, migration guide |
 | Rate limiting issues | Low | Medium | Monitoring, adjustable limits |
 | klsescreener.com changes | Medium | High | Fast response, tests alert quickly |
-| beatit functionality regression | Low | High | Comprehensive testing before deployment |
+| functionality regression | Low | High | Comprehensive testing before deployment |
 
 **Overall Risk Level:** LOW ✅
 
 ---
 
 ## Conclusion
-
-The integration of beatit's KLSE scraping functions into `klse-screener-py` has been highly successful:
-
-- **4 out of 5 phases complete** (on schedule)
-- **474 lines of code removed** from beatit
-- **57 tests passing** in library
-- **Zero functionality loss** (all features preserved)
-- **Backward compatible** (no breaking changes yet)
 
 **The centralized library approach provides:**
 - Shared maintenance burden
@@ -310,8 +218,6 @@ The integration of beatit's KLSE scraping functions into `klse-screener-py` has 
 - Better testing coverage
 - Pandas-free core with optional wrappers
 
-**Ready for Phase 5: Final Verification & Documentation.**
-
 ---
 
 ## Contact & Support
@@ -319,7 +225,7 @@ The integration of beatit's KLSE scraping functions into `klse-screener-py` has 
 - **Repository:** https://github.com/klse-screener-py
 - **Issues:** https://github.com/klse-screener-py/issues
 - **Migration Guide:** `docs/MIGRATION_TO_V2.md`
-- **Maintainers:** FinGenius Team
+- **Maintainers:** hwaseong
 
 ---
 

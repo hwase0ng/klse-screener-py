@@ -518,12 +518,12 @@ def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-# Convenience alias for backward compatibility with beatit
+# Convenience alias for backward compatibility with project
 def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
     """
     Alias for get_klse_fundamentals_mf_enhanced().
     
-    This function exists for backward compatibility with beatit.
+    This function exists for backward compatibility with project.
     New code should use get_klse_fundamentals_mf_enhanced() directly.
     """
     return get_klse_fundamentals_mf_enhanced(ticker)

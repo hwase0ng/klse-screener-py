@@ -285,19 +285,19 @@ class TestGetKlseAnnouncementsByTicker:
 
 
 class TestBackwardCompatibility:
-    """Test that new dict functions are compatible with beatit usage"""
+    """Test that new dict functions are compatible with project usage"""
     
     def test_quarterly_has_ttm(self):
-        """Verify quarterly function has TTM calculations (beatit requirement)"""
+        """Verify quarterly function has TTM calculations (project requirement)"""
         result = get_klse_quarterly_financials_dict("5132.KL")
         
-        # TTM fields must exist for beatit Magic Formula
+        # TTM fields must exist for project Magic Formula
         assert "ttm_revenue" in result
         assert "ttm_net_profit" in result
         assert "ttm_eps" in result
     
     def test_combined_has_mf_approximations(self):
-        """Verify combined function has MF approximations (beatit requirement)"""
+        """Verify combined function has MF approximations (project requirement)"""
         result = get_klse_fundamentals_combined("5132.KL")
         
         # MF approximation fields

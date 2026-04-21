@@ -100,9 +100,9 @@ data = scrape_ohlcv_raw("5132.KL", period="30d")
 print(data[0])  # {"date": "2026-04-20", "open": 1.27, ...}
 ```
 
-For pandas users (beatit-specific wrapper):
+For pandas users (project-specific wrapper):
 ```python
-# In beatit only - library is pandas-free
+# In project only - library is pandas-free
 from app.api.data_sources.klsescreener_fundamentals import fetch_from_klsescreener
 
 df = fetch_from_klsescreener("5132.KL")
@@ -111,9 +111,9 @@ df = fetch_from_klsescreener("5132.KL")
 
 ## Migration Checklist
 
-### For LLM/FinGenius Users
+### For LLM Users
 
-If you're using the library for LLM consumption (FinGenius):
+If you're using the library for LLM consumption:
 
 - [ ] **Keep using string functions** for now (they still work in v1.3.0)
 - [ ] Update by v1.4.0 when warnings become errors
@@ -141,7 +141,7 @@ def format_quarterly_for_llm(data):
 llm_input = format_quarterly_for_llm(data)
 ```
 
-### For Application Users (beatit)
+### For Application Users
 
 If you're using the library for programmatic access:
 
@@ -196,7 +196,7 @@ html = scrape_klsescreener(symbol)
 df = parse_to_dataframe(html)
 ```
 
-**After (beatit-specific):**
+**After (project-specific):**
 ```python
 from app.api.data_sources.klsescreener_fundamentals import fetch_from_klsescreener
 
