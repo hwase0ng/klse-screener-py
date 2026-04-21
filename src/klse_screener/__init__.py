@@ -49,6 +49,27 @@ from .financial_reports import (
     get_klse_market_announcements,
 )
 
+# NEW: Structured financial data (pandas-free)
+from .financials import (
+    get_klse_key_ratios,
+    get_klse_quarterly_financials_dict,
+    get_klse_annual_financials_dict,
+    get_klse_fundamentals_combined,
+)
+
+# NEW: Price history (pandas-free)
+from .price_history import (
+    scrape_ohlcv_raw,
+    get_klse_price_history,
+)
+
+# NEW: QR announcements
+from .qr_announcements import (
+    get_klse_daily_financial_reports,
+    get_klse_announcements_by_ticker,
+    get_klse_financial_reports_by_ticker,
+)
+
 __all__ = [
     # Version
     "__version__",
@@ -74,7 +95,7 @@ __all__ = [
     "get_klse_announcements",
     "get_klse_market_sentiment",
     "get_klse_full_report",
-    # Formatted wrappers
+    # Formatted wrappers (LLM-friendly)
     "get_klse_trade_summary_formatted",
     "get_klse_trade_details_formatted",
     "get_klse_comments_formatted",
@@ -96,4 +117,16 @@ __all__ = [
     "fetch_url",
     "reset_rate_limit",
     "clear_cache",
+    # NEW: Structured financial data (pandas-free)
+    "get_klse_key_ratios",
+    "get_klse_quarterly_financials_dict",
+    "get_klse_annual_financials_dict",
+    "get_klse_fundamentals_combined",
+    # NEW: Price history (pandas-free)
+    "scrape_ohlcv_raw",
+    "get_klse_price_history",
+    # NEW: QR announcements
+    "get_klse_daily_financial_reports",
+    "get_klse_announcements_by_ticker",
+    "get_klse_financial_reports_by_ticker",
 ]
