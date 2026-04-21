@@ -22,6 +22,14 @@ from .core import (
     get_klse_announcements,
     get_klse_market_sentiment,
     get_klse_full_report,
+    # Raw functions (v2.0)
+    get_klse_news_raw,
+    get_klse_announcements_raw,
+    get_klse_dividends_raw,
+    get_klse_capital_changes_raw,
+    get_klse_warrants_raw,
+    get_klse_shareholding_changes_raw,
+    get_klse_market_sentiment_raw,
     # Formatted wrappers
     get_klse_trade_summary_formatted,
     get_klse_trade_details_formatted,
@@ -95,6 +103,14 @@ __all__ = [
     "get_klse_announcements",
     "get_klse_market_sentiment",
     "get_klse_full_report",
+    # Raw functions (v2.0)
+    "get_klse_news_raw",
+    "get_klse_announcements_raw",
+    "get_klse_dividends_raw",
+    "get_klse_capital_changes_raw",
+    "get_klse_warrants_raw",
+    "get_klse_shareholding_changes_raw",
+    "get_klse_market_sentiment_raw",
     # Formatted wrappers (LLM-friendly)
     "get_klse_trade_summary_formatted",
     "get_klse_trade_details_formatted",

@@ -17,6 +17,7 @@ Source: https://www.klsescreener.com/v2
 
 import logging
 import re
+import warnings
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -130,20 +131,23 @@ def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
         return {"error": str(e)}
 
 
-def get_klse_news(ticker: str, limit: int = 10) -> str:
-    """Fetch stock-specific news from KLSE Screener.
-
-    Returns formatted string. Empty for non-KLSE.
+def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
+    """Fetch stock-specific news from KLSE Screener (raw structured data).
 
     Args:
-        ticker: Stock ticker
-        limit: Maximum number of news items
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of news items (default: 10)
 
     Returns:
-        Formatted news string, or empty string
+        List of dicts with keys: title, url
+
+    Example:
+        >>> news = get_klse_news_raw("5132.KL", limit=5)
+        >>> for item in news:
+        ...     print(f"{item['title']}: {item['url']}")
     """
     if not is_klse(ticker):
-        return ""
+        return []
 
     try:
         code = _extract_code(ticker)
@@ -157,18 +161,371 @@ def get_klse_news(ticker: str, limit: int = 10) -> str:
         )
 
         seen = set()
-        results: List[str] = []
-        for _, title in items:
+        results: List[Dict[str, str]] = []
+        for url_path, title in items:
             clean = re.sub(r"<[^>]+>", "", title).strip()
             if clean and clean not in seen:
                 seen.add(clean)
-                results.append(f"- {clean}")
+                results.append({"title": clean, "url": f"https://www.klsescreener.com{url_path}"})
                 if len(results) >= limit:
                     break
 
-        if not results:
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_news_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_announcements_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
+    """Fetch Bursa Malaysia announcements from KLSE Screener (raw structured data).
+
+    Args:
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of announcements (default: 10)
+
+    Returns:
+        List of dicts with keys: title, url, date
+
+    Example:
+        >>> ann = get_klse_announcements_raw("5132.KL", limit=5)
+        >>> for item in ann:
+        ...     print(f"{item['date']}: {item['title']}")
+    """
+    if not is_klse(ticker):
+        return []
+
+    try:
+        code = _extract_code(ticker)
+        url = f"https://www.klsescreener.com/v2/announcements/stock/{code}"
+        html = fetch_url(url, f"ann_{code}")
+
+        blocks = re.findall(
+            r'href="(/v2/announcements/view/\d+)"[^>]*>\s*([^<]+)\s*</a>.*?'
+            r"(\d{4}-\d{2}-\d{2}\s*-\s*\d+:\d+\s*[ap]m)",
+            html,
+            re.DOTALL,
+        )
+
+        seen = set()
+        results: List[Dict[str, str]] = []
+        for url_path, title, date_str in blocks:
+            date_str = date_str.strip()
+            clean_title = re.sub(r"<[^>]+>", "", title).strip()
+            if clean_title and date_str and date_str not in seen:
+                seen.add(date_str)
+                results.append({
+                    "title": clean_title,
+                    "url": f"https://www.klsescreener.com{url_path}",
+                    "date": date_str
+                })
+                if len(results) >= limit:
+                    break
+
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_announcements_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+    """Fetch dividend history from KLSE Screener (raw structured data).
+
+    Args:
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of dividends (default: 5)
+
+    Returns:
+        List of dicts with keys: ex_date, payment_date, dividend_amount, type
+
+    Example:
+        >>> divs = get_klse_dividends_raw("5132.KL", limit=3)
+        >>> for div in divs:
+        ...     print(f"Ex: {div['ex_date']}, Pay: {div['payment_date']}, Amt: {div['dividend_amount']}")
+    """
+    if not is_klse(ticker):
+        return []
+
+    try:
+        code = _extract_code(ticker)
+        html = fetch_url(
+            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
+        )
+
+        match = re.search(r'id="dividends".*?</div>\s*</div>', html, re.DOTALL)
+        if not match:
+            return []
+
+        content = match.group(0)
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
+        if not rows:
+            return []
+
+        results: List[Dict[str, str]] = []
+        count = 0
+        for row in rows:
+            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
+            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+            if len(clean) >= 7 and clean[3]:
+                results.append({
+                    "announcement_date": clean[0],
+                    "entitlement_date": clean[1],
+                    "ex_date": clean[2],
+                    "dividend_amount": clean[3],
+                    "payment_date": clean[4],
+                    "type": clean[5],
+                    "basis": clean[6] if len(clean) > 6 else ""
+                })
+                count += 1
+                if count >= limit:
+                    break
+
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_dividends_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+    """Fetch capital changes (splits, bonus issues) from KLSE Screener (raw structured data).
+
+    Args:
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of changes (default: 5)
+
+    Returns:
+        List of dicts with keys: date, change_type, description
+
+    Example:
+        >>> changes = get_klse_capital_changes_raw("5132.KL", limit=3)
+        >>> for change in changes:
+        ...     print(f"{change['date']}: {change['change_type']} - {change['description']}")
+    """
+    if not is_klse(ticker):
+        return []
+
+    try:
+        code = _extract_code(ticker)
+        html = fetch_url(
+            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
+        )
+
+        match = re.search(r'id="capital_changes".*?</div>\s*</div>', html, re.DOTALL)
+        if not match:
+            return []
+
+        content = match.group(0)
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
+        if not rows:
+            return []
+
+        results: List[Dict[str, str]] = []
+        count = 0
+        for row in rows:
+            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
+            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+            if len(clean) >= 4 and clean[2]:
+                results.append({
+                    "announcement_date": clean[0],
+                    "entitlement_date": clean[1],
+                    "ex_date": clean[2],
+                    "description": clean[3]
+                })
+                count += 1
+                if count >= limit:
+                    break
+
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_capital_changes_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_warrants_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+    """Fetch warrants from KLSE Screener (raw structured data).
+
+    Args:
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of warrants (default: 5)
+
+    Returns:
+        List of dicts with keys: name, last_price, change, volume
+
+    Example:
+        >>> warrants = get_klse_warrants_raw("5132.KL", limit=3)
+        >>> for w in warrants:
+        ...     print(f"{w['name']}: Last={w['last_price']}, Vol={w['volume']}")
+    """
+    if not is_klse(ticker):
+        return []
+
+    try:
+        code = _extract_code(ticker)
+        html = fetch_url(
+            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
+        )
+
+        match = re.search(r'id="warrants"(.*?)</div>\s*</div>', html, re.DOTALL)
+        if not match:
+            return []
+
+        content = match.group(0)
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
+        if not rows:
+            return []
+
+        results: List[Dict[str, str]] = []
+        count = 0
+        for row in rows:
+            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
+            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+            if len(clean) >= 4 and clean[0]:
+                results.append({
+                    "name": clean[0],
+                    "last_price": clean[1],
+                    "change": clean[2],
+                    "volume": clean[3]
+                })
+                count += 1
+                if count >= limit:
+                    break
+
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_warrants_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict[str, str]]:
+    """Fetch institutional shareholding TRANSACTIONS from KLSE Screener (raw structured data).
+
+    Args:
+        ticker: Stock ticker (e.g., "5132.KL")
+        limit: Maximum number of transactions (default: 20)
+
+    Returns:
+        List of dicts with keys: name, date, transaction_type, shares, holder
+
+    Example:
+        >>> changes = get_klse_shareholding_changes_raw("5132.KL", limit=5)
+        >>> for change in changes:
+        ...     print(f"{change['name']}: {change['shares']} shares on {change['date']}")
+    """
+    if not is_klse(ticker):
+        return []
+
+    try:
+        code = _extract_code(ticker)
+        html = fetch_url(
+            f"https://www.klsescreener.com/v2/stocks/view/{code}",
+            f"shareholding_{code}",
+        )
+
+        match = re.search(
+            r'id="shareholding_changes"(.*?)</div>\s*</div>', html, re.DOTALL
+        )
+        if not match:
+            return []
+
+        content = match.group(0)
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
+        if not rows:
+            return []
+
+        results: List[Dict[str, str]] = []
+        count = 0
+        for row in rows:
+            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
+            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+            if len(clean) >= 5 and clean[0]:
+                results.append({
+                    "name": clean[0],
+                    "date": clean[1],
+                    "transaction_type": clean[2],
+                    "shares": clean[3],
+                    "holder": clean[4]
+                })
+                count += 1
+                if count >= limit:
+                    break
+
+        return results
+
+    except Exception as e:
+        logger.error(f"get_klse_shareholding_changes_raw failed for {ticker}: {e}")
+        return []
+
+
+def get_klse_market_sentiment_raw() -> Dict[str, Any]:
+    """Fetch overall market sentiment from KLSE Screener (raw structured data).
+
+    Note: KLSE Screener removed Top Gainers/Losers from homepage.
+
+    Returns:
+        Dict with keys: market_updates, note
+        Returns empty dict on error
+
+    Example:
+        >>> sentiment = get_klse_market_sentiment_raw()
+        >>> print(sentiment.get('market_updates', 'No updates'))
+    """
+    try:
+        html = fetch_url("https://www.klsescreener.com/v2/", "market_overview")
+        soup = BeautifulSoup(html, "html.parser")
+
+        ann_section = soup.find("section")
+        if ann_section:
+            ann_text = ann_section.get_text()[:500].strip()
+            if ann_text:
+                return {
+                    "market_updates": ann_text,
+                    "note": "Market updates from KLSE Screener homepage"
+                }
+
+        return {
+            "market_updates": "",
+            "note": "KLSE Screener has removed Top Gainers/Losers from homepage. Alternative: Check KLCI via yfinance or individual stock data."
+        }
+
+    except Exception as e:
+        logger.error(f"get_klse_market_sentiment_raw failed: {e}")
+        return {"error": str(e)}
+
+
+def get_klse_news(ticker: str, limit: int = 10) -> str:
+    """Fetch stock-specific news from KLSE Screener.
+
+    Returns formatted string. Empty for non-KLSE.
+
+    Args:
+        ticker: Stock ticker
+        limit: Maximum number of news items
+
+    Returns:
+        Formatted news string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_news_raw() for structured data.
+    """
+    warnings.warn(
+        "get_klse_news() is deprecated and will be removed in v2.0. "
+        "Use get_klse_news_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    if not is_klse(ticker):
+        return ""
+
+    try:
+        raw_news = get_klse_news_raw(ticker, limit)
+        if not raw_news:
             return ""
 
+        results = [f"- {item['title']}" for item in raw_news]
         return "## KLSE Screener News\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -187,35 +544,25 @@ def get_klse_announcements(ticker: str, limit: int = 10) -> str:
 
     Returns:
         Formatted announcements string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_announcements_raw() for structured data.
     """
+    warnings.warn(
+        "get_klse_announcements() is deprecated and will be removed in v2.0. "
+        "Use get_klse_announcements_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if not is_klse(ticker):
         return ""
 
     try:
-        code = _extract_code(ticker)
-        url = f"https://www.klsescreener.com/v2/announcements/stock/{code}"
-        html = fetch_url(url, f"ann_{code}")
-
-        blocks = re.findall(
-            r'href="(/v2/announcements/view/\d+)".*?'
-            r"(\d{4}-\d{2}-\d{2}\s*-\s*\d+:\d+\s*[ap]m)",
-            html,
-            re.DOTALL,
-        )
-
-        seen = set()
-        results: List[str] = []
-        for _, date_str in blocks:
-            date_str = date_str.strip()
-            if date_str and date_str not in seen:
-                seen.add(date_str)
-                results.append(f"- Bursa announcement ({date_str})")
-                if len(results) >= limit:
-                    break
-
-        if not results:
+        raw_ann = get_klse_announcements_raw(ticker, limit)
+        if not raw_ann:
             return ""
 
+        results = [f"- Bursa announcement ({item['date']})" for item in raw_ann]
         return "## Bursa Malaysia Announcements\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -299,41 +646,28 @@ def get_klse_dividends(ticker: str, limit: int = 5) -> str:
 
     Returns:
         Formatted dividend history string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_dividends_raw() for structured data.
     """
+    warnings.warn(
+        "get_klse_dividends() is deprecated and will be removed in v2.0. "
+        "Use get_klse_dividends_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if not is_klse(ticker):
         return ""
 
     try:
-        code = _extract_code(ticker)
-        html = fetch_url(
-            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
-        )
-
-        match = re.search(r'id="dividends".*?</div>\s*</div>', html, re.DOTALL)
-        if not match:
+        raw_divs = get_klse_dividends_raw(ticker, limit)
+        if not raw_divs:
             return ""
 
-        content = match.group(0)
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
-        if not rows:
-            return ""
-
-        results: List[str] = []
-        count = 0
-        for row in rows:
-            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
-            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
-            if len(clean) >= 7 and clean[3]:
-                results.append(
-                    f"- {clean[3]}: {clean[5]} (Ex: {clean[2]}, Pay: {clean[4]})"
-                )
-                count += 1
-                if count >= limit:
-                    break
-
-        if count == 0:
-            return ""
-
+        results = [
+            f"- {div['dividend_amount']} (Ex: {div['ex_date']}, Pay: {div['payment_date']})"
+            for div in raw_divs
+        ]
         return "## KLSE Dividend History\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -352,39 +686,28 @@ def get_klse_capital_changes(ticker: str, limit: int = 5) -> str:
 
     Returns:
         Formatted capital changes string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_capital_changes_raw() for structured data.
     """
+    warnings.warn(
+        "get_klse_capital_changes() is deprecated and will be removed in v2.0. "
+        "Use get_klse_capital_changes_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if not is_klse(ticker):
         return ""
 
     try:
-        code = _extract_code(ticker)
-        html = fetch_url(
-            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
-        )
-
-        match = re.search(r'id="capital_changes".*?</div>\s*</div>', html, re.DOTALL)
-        if not match:
+        raw_changes = get_klse_capital_changes_raw(ticker, limit)
+        if not raw_changes:
             return ""
 
-        content = match.group(0)
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
-        if not rows:
-            return ""
-
-        results: List[str] = []
-        count = 0
-        for row in rows:
-            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
-            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
-            if len(clean) >= 4 and clean[2]:
-                results.append(f"- {clean[2]}: {clean[3]} ({clean[0]})")
-                count += 1
-                if count >= limit:
-                    break
-
-        if count == 0:
-            return ""
-
+        results = [
+            f"- {change['ex_date']}: {change['description']} ({change['announcement_date']})"
+            for change in raw_changes
+        ]
         return "## KLSE Capital Changes\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -403,41 +726,28 @@ def get_klse_warrants(ticker: str, limit: int = 5) -> str:
 
     Returns:
         Formatted warrants string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_warrants_raw() for structured data.
     """
+    warnings.warn(
+        "get_klse_warrants() is deprecated and will be removed in v2.0. "
+        "Use get_klse_warrants_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if not is_klse(ticker):
         return ""
 
     try:
-        code = _extract_code(ticker)
-        html = fetch_url(
-            f"https://www.klsescreener.com/v2/stocks/view/{code}", f"stock_{code}"
-        )
-
-        match = re.search(r'id="warrants"(.*?)</div>\s*</div>', html, re.DOTALL)
-        if not match:
+        raw_warrants = get_klse_warrants_raw(ticker, limit)
+        if not raw_warrants:
             return ""
 
-        content = match.group(0)
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
-        if not rows:
-            return ""
-
-        results: List[str] = []
-        count = 0
-        for row in rows:
-            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
-            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
-            if len(clean) >= 4 and clean[0]:
-                results.append(
-                    f"- {clean[0]}: Last={clean[1]}, Chg={clean[2]}, Vol={clean[3]}"
-                )
-                count += 1
-                if count >= limit:
-                    break
-
-        if count == 0:
-            return ""
-
+        results = [
+            f"- {w['name']}: Last={w['last_price']}, Chg={w['change']}, Vol={w['volume']}"
+            for w in raw_warrants
+        ]
         return "## KLSE Warrants\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -456,44 +766,28 @@ def get_klse_shareholding_changes(ticker: str, limit: int = 20) -> str:
 
     Returns:
         Formatted shareholding changes string, or empty string
+
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_shareholding_changes_raw() for structured data.
     """
+    warnings.warn(
+        "get_klse_shareholding_changes() is deprecated and will be removed in v2.0. "
+        "Use get_klse_shareholding_changes_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if not is_klse(ticker):
         return ""
 
     try:
-        code = _extract_code(ticker)
-        html = fetch_url(
-            f"https://www.klsescreener.com/v2/stocks/view/{code}",
-            f"shareholding_{code}",
-        )
-
-        match = re.search(
-            r'id="shareholding_changes"(.*?)</div>\s*</div>', html, re.DOTALL
-        )
-        if not match:
+        raw_changes = get_klse_shareholding_changes_raw(ticker, limit)
+        if not raw_changes:
             return ""
 
-        content = match.group(0)
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
-        if not rows:
-            return ""
-
-        results: List[str] = []
-        count = 0
-        for row in rows:
-            cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
-            clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
-            if len(clean) >= 5 and clean[0]:
-                results.append(
-                    f"- {clean[0]}: {clean[3]} shares ({clean[2]}) by {clean[4]}"
-                )
-                count += 1
-                if count >= limit:
-                    break
-
-        if count == 0:
-            return ""
-
+        results = [
+            f"- {change['name']}: {change['shares']} shares ({change['transaction_type']}) by {change['holder']}"
+            for change in raw_changes
+        ]
         return "## KLSE Shareholding Changes\n\n" + "\n".join(results)
 
     except Exception as e:
@@ -600,12 +894,13 @@ def get_klse_full_report(ticker: str) -> Dict[str, Any]:
     return {
         "fundamentals": get_klse_fundamentals(ticker),
         "annual": get_klse_annual(ticker),
-        "dividends": get_klse_dividends(ticker),
-        "capital_changes": get_klse_capital_changes(ticker),
-        "warrants": get_klse_warrants(ticker, limit=5),
-        "shareholding_changes": get_klse_shareholding_changes(ticker, limit=5),
-        "news": get_klse_news(ticker, limit=5),
-        "announcements": get_klse_announcements(ticker, limit=5),
+        "dividends": get_klse_dividends_raw(ticker, limit=5),
+        "capital_changes": get_klse_capital_changes_raw(ticker, limit=5),
+        "warrants": get_klse_warrants_raw(ticker, limit=5),
+        "shareholding_changes": get_klse_shareholding_changes_raw(ticker, limit=5),
+        "news": get_klse_news_raw(ticker, limit=5),
+        "announcements": get_klse_announcements_raw(ticker, limit=5),
+        "market_sentiment": get_klse_market_sentiment_raw(),
     }
 
 
@@ -814,21 +1109,30 @@ def get_klse_market_sentiment() -> str:
 
     Returns:
         Formatted market sentiment string
-    """
-    try:
-        html = fetch_url("https://www.klsescreener.com/v2/", "market_overview")
-        soup = BeautifulSoup(html, "html.parser")
 
-        ann_section = soup.find("section")
-        if ann_section:
-            ann_text = ann_section.get_text()[:500].strip()
-            if ann_text:
-                return f"## KLSE Market Updates\n\n{ann_text}"
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_market_sentiment_raw() for structured data.
+    """
+    warnings.warn(
+        "get_klse_market_sentiment() is deprecated and will be removed in v2.0. "
+        "Use get_klse_market_sentiment_raw() for structured data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    try:
+        raw_sentiment = get_klse_market_sentiment_raw()
+        if not raw_sentiment:
+            return ""
+
+        market_updates = raw_sentiment.get("market_updates", "")
+        note = raw_sentiment.get("note", "")
+
+        if market_updates:
+            return f"## KLSE Market Updates\n\n{market_updates}"
 
         return (
             "## KLSE Market Sentiment\n\n"
-            "**Note:** KLSE Screener has removed Top Gainers/Losers from homepage.\n\n"
-            "Alternative: Check KLCI via yfinance or individual stock data."
+            f"**Note:** {note}"
         )
 
     except Exception as e:
