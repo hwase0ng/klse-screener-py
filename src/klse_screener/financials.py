@@ -461,7 +461,7 @@ def get_klse_annual_financials_dict(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_fundamentals_combined(ticker: str) -> Dict[str, Any]:
+def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
     """
     Fetch all available fundamental data for a KLSE stock.
     
@@ -486,7 +486,7 @@ def get_klse_fundamentals_combined(ticker: str) -> Dict[str, Any]:
         
         # Consolidate
         result: Dict[str, Any] = {
-            "data_source": "klsescreener_combined",
+            "data_source": "klsescreener_mf_enhanced",
             "ticker": ticker,
             "market_cap": key_ratios.get("market_cap"),
             "pe_ratio": key_ratios.get("pe_ratio"),
@@ -510,20 +510,38 @@ def get_klse_fundamentals_combined(ticker: str) -> Dict[str, Any]:
             "approx_fixed_assets": key_ratios.get("nta_per_share"),  # NTA as fixed assets proxy
         }
         
-        logger.info(f"Combined fundamentals fetched for {ticker}")
+        logger.info(f"MF-enhanced fundamentals fetched for {ticker}")
         return result
         
     except Exception as e:
-        logger.error(f"get_klse_fundamentals_combined failed for {ticker}: {e}")
+        logger.error(f"get_klse_fundamentals_mf_enhanced failed for {ticker}: {e}")
         return {}
 
 
 # Convenience alias for backward compatibility
+def get_klse_fundamentals_combined(ticker: str) -> Dict[str, Any]:
+    """
+    DEPRECATED: Use get_klse_fundamentals_mf_enhanced() instead.
+    
+    This function exists for backward compatibility.
+    Will be removed in v2.0.
+    """
+    import warnings
+    warnings.warn(
+        "get_klse_fundamentals_combined() is deprecated and will be removed in v2.0. "
+        "Use get_klse_fundamentals_mf_enhanced() for Magic Formula enhanced data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return get_klse_fundamentals_mf_enhanced(ticker)
+
+
+# Convenience alias for backward compatibility with beatit
 def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
     """
-    Alias for get_klse_fundamentals_combined().
+    Alias for get_klse_fundamentals_mf_enhanced().
     
     This function exists for backward compatibility with beatit.
-    New code should use get_klse_fundamentals_combined() directly.
+    New code should use get_klse_fundamentals_mf_enhanced() directly.
     """
-    return get_klse_fundamentals_combined(ticker)
+    return get_klse_fundamentals_mf_enhanced(ticker)
