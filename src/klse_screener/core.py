@@ -225,8 +225,9 @@ def get_klse_announcements(ticker: str, limit: int = 10) -> str:
 
 def get_klse_annual(ticker: str, limit: int = 3) -> str:
     """Fetch annual financials from KLSE Screener.
-
-    Returns formatted string. Empty for non-KLSE.
+    
+    DEPRECATED: This function returns formatted string for LLM consumption.
+    For programmatic use, use get_klse_annual_financials_dict() instead.
 
     Args:
         ticker: Stock ticker
@@ -234,7 +235,18 @@ def get_klse_annual(ticker: str, limit: int = 3) -> str:
 
     Returns:
         Formatted annual data string, or empty string
+    
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_annual_financials_dict() for structured dict data.
     """
+    import warnings
+    warnings.warn(
+        "get_klse_annual() is deprecated and will be removed in v2.0. "
+        "Use get_klse_annual_financials_dict() for structured dict data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     if not is_klse(ticker):
         return ""
 
@@ -599,14 +611,28 @@ def get_klse_full_report(ticker: str) -> Dict[str, Any]:
 
 def get_klse_quarterly_history(ticker: str, limit: int = 20) -> str:
     """Fetch multi-quarter history for a KLSE stock.
-
+    
+    DEPRECATED: This function returns formatted string for LLM consumption.
+    For programmatic use, use get_klse_quarterly_financials_dict() instead.
+    
     Args:
         ticker: Stock ticker
         limit: Maximum number of quarters
-
+    
     Returns:
         Formatted quarterly history string, or empty string
+    
+    Deprecated:
+        Will be removed in v2.0. Use get_klse_quarterly_financials_dict() for structured data.
     """
+    import warnings
+    warnings.warn(
+        "get_klse_quarterly_history() is deprecated and will be removed in v2.0. "
+        "Use get_klse_quarterly_financials_dict() for structured dict data.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     if not is_klse(ticker):
         return ""
 
