@@ -8,21 +8,13 @@ from ._version import __version__
 from .core import (
     get_klse_fundamentals,
     get_klse_enhanced_fundamentals,
-    get_klse_annual,
     get_klse_quarterly_history,
-    get_klse_dividends,
-    get_klse_capital_changes,
-    get_klse_warrants,
-    get_klse_shareholding_changes,
     get_klse_intraday_stats,
     get_klse_trade_summary,
     get_klse_trade_details,
     get_klse_comments,
-    get_klse_news,
-    get_klse_announcements,
-    get_klse_market_sentiment,
     get_klse_full_report,
-    # Raw functions (v2.0)
+    # Raw functions (v2.0+)
     get_klse_news_raw,
     get_klse_announcements_raw,
     get_klse_dividends_raw,
@@ -86,24 +78,16 @@ __all__ = [
     "detect_market",
     "is_klse",
     "is_hkse",
-    # Core individual stock functions
+    # Core individual stock functions (structured data)
     "get_klse_fundamentals",
     "get_klse_enhanced_fundamentals",
-    "get_klse_annual",
     "get_klse_quarterly_history",
-    "get_klse_dividends",
-    "get_klse_capital_changes",
-    "get_klse_warrants",
-    "get_klse_shareholding_changes",
     "get_klse_intraday_stats",
     "get_klse_trade_summary",
     "get_klse_trade_details",
     "get_klse_comments",
-    "get_klse_news",
-    "get_klse_announcements",
-    "get_klse_market_sentiment",
     "get_klse_full_report",
-    # Raw functions (v2.0)
+    # Raw functions (v2.0+ - recommended for programmatic use)
     "get_klse_news_raw",
     "get_klse_announcements_raw",
     "get_klse_dividends_raw",
@@ -133,15 +117,15 @@ __all__ = [
     "fetch_url",
     "reset_rate_limit",
     "clear_cache",
-    # NEW: Structured financial data (pandas-free)
+    # Structured financial data (pandas-free)
     "get_klse_key_ratios",
     "get_klse_quarterly_financials_dict",
     "get_klse_annual_financials_dict",
     "get_klse_fundamentals_mf_enhanced",  # Recommended for Magic Formula
-    # NEW: Price history (pandas-free)
+    # Price history (pandas-free)
     "scrape_ohlcv_raw",
     "get_klse_price_history",
-    # NEW: QR announcements
+    # QR announcements
     "get_klse_daily_financial_reports",
     "get_klse_announcements_by_ticker",
     "get_klse_financial_reports_by_ticker",

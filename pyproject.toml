@@ -4,21 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "klse-screener-py"
-version = "2.0.0"
-description = "Malaysian (KLSE/Bursa) stock data scraper - fundamentals, trading data, news, announcements"
+version = "3.0.0"
+description = "KLSE Screener Python Library - Malaysian (KLSE/Bursa) stock data scraper with fundamentals, price history, and announcements"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "hwaseong" }]
 keywords = ["klse", "bursa", "malaysia", "stocks", "screener", "financial-data"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Trader and Coder",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Financial and Insurance Industry",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
