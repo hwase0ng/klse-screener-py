@@ -14,7 +14,7 @@ from .core import (
     get_klse_trade_details,
     get_klse_comments,
     get_klse_full_report,
-    # Raw functions (v2.0+)
+    # Raw functions (KLSE-only)
     get_klse_news_raw,
     get_klse_announcements_raw,
     get_klse_dividends_raw,
@@ -26,7 +26,6 @@ from .core import (
     get_klse_trade_details_formatted,
     get_klse_comments_formatted,
 )
-from .market import Market, detect_market, is_klse, is_hkse
 from .http import fetch_url, reset_rate_limit, clear_cache
 
 # Market-wide data
@@ -72,12 +71,7 @@ from .qr_announcements import (
 __all__ = [
     # Version
     "__version__",
-    # Market detection
-    "Market",
-    "detect_market",
-    "is_klse",
-    "is_hkse",
-    # Core individual stock functions (structured data)
+    # Core individual stock functions (KLSE-only)
     "get_klse_fundamentals",
     "get_klse_enhanced_fundamentals",
     "get_klse_quarterly_history",
@@ -86,7 +80,7 @@ __all__ = [
     "get_klse_trade_details",
     "get_klse_comments",
     "get_klse_full_report",
-    # Raw functions (v2.0+ - recommended for programmatic use)
+    # Raw functions (KLSE-only - recommended for programmatic use)
     "get_klse_news_raw",
     "get_klse_announcements_raw",
     "get_klse_dividends_raw",

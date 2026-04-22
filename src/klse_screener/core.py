@@ -24,7 +24,10 @@ from typing import Any, Dict, List, Optional
 from bs4 import BeautifulSoup
 
 from .http import fetch_url
-from .market import is_klse
+# KLSE-only library - no market detection needed
+def is_klse(ticker: str) -> bool:
+    """KLSE-only library - always returns True"""
+    return True
 
 logger = logging.getLogger(__name__)
 

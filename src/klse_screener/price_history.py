@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .http import fetch_url
-from .market import detect_market
+# KLSE-only - no market detection
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ def scrape_ohlcv_raw(symbol: str, period: str = '30d') -> List[Dict[str, Any]]:
             ...
         ]
     """
-    market = detect_market(symbol)
+    # market = detect_market(symbol)  # KLSE-only
     
     if period == '30d':
         return _scrape_30day_history(symbol, market)
