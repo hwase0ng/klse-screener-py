@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "klse-screener-py"
-version = "3.0.4"
+version = "3.1.0"
 description = "KLSE Screener Python Library - Malaysian (KLSE/Bursa) stock data scraper with fundamentals, price history, and announcements"
 readme = "README.md"
 requires-python = ">=3.10"
