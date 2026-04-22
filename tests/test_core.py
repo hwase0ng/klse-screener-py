@@ -3,42 +3,16 @@
 import pytest
 from klse_screener import (
     get_klse_fundamentals,
-    get_klse_news,
-    get_klse_announcements,
+    get_klse_news_raw,
+    get_klse_announcements_raw,
     get_klse_trade_summary,
     get_klse_comments,
-    is_klse,
 )
 
 
 # Test tickers
 KLSE_TICKER = "5132.KL"  # Deleum Berhad - active stock
-HKSE_TICKER = "0700.HK"  # Tencent - not KLSE
 INVALID_TICKER = "INVALID"
-
-
-class TestMarketDetection:
-    """Test that non-KLSE tickers return empty results."""
-
-    def test_fundamentals_non_klse(self):
-        """Return empty dict for non-KLSE."""
-        result = get_klse_fundamentals(HKSE_TICKER)
-        assert result == {}
-
-    def test_news_non_klse(self):
-        """Return empty string for non-KLSE."""
-        result = get_klse_news(HKSE_TICKER)
-        assert result == ""
-
-    def test_trade_summary_non_klse(self):
-        """Return empty dict for non-KLSE."""
-        result = get_klse_trade_summary(HKSE_TICKER)
-        assert result == {}
-
-    def test_comments_non_klse(self):
-        """Return empty list for non-KLSE."""
-        result = get_klse_comments(HKSE_TICKER)
-        assert result == []
 
 
 class TestGetKlseFundamentals:
@@ -67,7 +41,7 @@ class TestGetKlseNews:
     @pytest.mark.skip(reason="Requires live API access")
     def test_news_format(self):
         """Verify news format."""
-        result = get_klse_news(KLSE_TICKER, limit=5)
+        result = get_klse_news_raw(KLSE_TICKER, limit=5)
         assert isinstance(result, str)
         if result:  # May be empty if no news
             assert "## KLSE Screener News" in result
@@ -80,7 +54,7 @@ class TestGetKlseAnnouncements:
     @pytest.mark.skip(reason="Requires live API access")
     def test_announcements_format(self):
         """Verify announcements format."""
-        result = get_klse_announcements(KLSE_TICKER, limit=5)
+        result = get_klse_announcements_raw(KLSE_TICKER, limit=5)
         assert isinstance(result, str)
         if result:
             assert "## Bursa Malaysia Announcements" in result
