@@ -13,7 +13,6 @@ from klse_screener import (
     get_klse_capital_changes_raw,
     get_klse_warrants_raw,
     get_klse_shareholding_changes_raw,
-    get_klse_market_sentiment_raw,
 )
 
 
@@ -57,11 +56,6 @@ class TestV3CoreFunctions:
         """get_klse_shareholding_changes_raw returns list of dicts"""
         result = get_klse_shareholding_changes_raw("5132.KL", limit=5)
         assert isinstance(result, list)
-    
-    def test_market_sentiment_raw_returns_dict(self):
-        """get_klse_market_sentiment_raw returns dict"""
-        result = get_klse_market_sentiment_raw()
-        assert isinstance(result, dict)
     
     def test_invalid_ticker_returns_empty(self):
         """Invalid ticker returns empty list"""

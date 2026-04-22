@@ -460,47 +460,6 @@ def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict
         return []
 
 
-def get_klse_market_sentiment_raw() -> Dict[str, Any]:
-    """Fetch overall market sentiment from KLSE Screener (raw structured data).
-
-    Note: KLSE Screener removed Top Gainers/Losers from homepage.
-
-    Returns:
-        Dict with keys: market_updates, note
-        Returns empty dict on error
-
-    Example:
-        >>> sentiment = get_klse_market_sentiment_raw()
-        >>> print(sentiment.get('market_updates', 'No updates'))
-    """
-    try:
-        html = fetch_url("https://www.klsescreener.com/v2/", "market_overview")
-        soup = BeautifulSoup(html, "html.parser")
-
-        ann_section = soup.find("section")
-        if ann_section:
-            ann_text = ann_section.get_text()[:500].strip()
-            if ann_text:
-                return {
-                    "market_updates": ann_text,
-                    "note": "Market updates from KLSE Screener homepage"
-                }
-
-        return {
-            "market_updates": "",
-            "note": "KLSE Screener has removed Top Gainers/Losers from homepage. Alternative: Check KLCI via yfinance or individual stock data."
-        }
-
-    except Exception as e:
-        logger.error(f"get_klse_market_sentiment_raw failed: {e}")
-        return {"error": str(e)}
-
-
-
-
-
-
-
 
 
 def get_klse_intraday_stats(ticker: str) -> Dict[str, Any]:
@@ -808,44 +767,6 @@ def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"get_klse_enhanced_fundamentals failed for {ticker}: {e}")
         return basic if basic else {"error": str(e)}
-
-
-def get_klse_market_sentiment() -> str:
-    """Fetch overall market sentiment from KLSE Screener.
-
-    Note: KLSE Screener removed Top Gainers/Losers from homepage.
-
-    Returns:
-        Formatted market sentiment string
-
-    Deprecated:
-        Will be removed in v2.0. Use get_klse_market_sentiment_raw() for structured data.
-    """
-    warnings.warn(
-        "get_klse_market_sentiment() is deprecated and will be removed in v2.0. "
-        "Use get_klse_market_sentiment_raw() for structured data.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-    try:
-        raw_sentiment = get_klse_market_sentiment_raw()
-        if not raw_sentiment:
-            return ""
-
-        market_updates = raw_sentiment.get("market_updates", "")
-        note = raw_sentiment.get("note", "")
-
-        if market_updates:
-            return f"## KLSE Market Updates\n\n{market_updates}"
-
-        return (
-            "## KLSE Market Sentiment\n\n"
-            f"**Note:** {note}"
-        )
-
-    except Exception as e:
-        logger.error(f"get_klse_market_sentiment failed: {e}")
-        return f"## KLSE Market Sentiment\n\nUnable to fetch: {str(e)}"
 
 
 def get_klse_trade_summary(ticker: str) -> Dict[str, Any]:
