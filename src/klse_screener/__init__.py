@@ -71,8 +71,6 @@ from .qr_announcements import (
     get_klse_financial_reports_by_ticker,
 )
 
-# NEW: Market-wide data (Bursa Malaysia)
-from .market_data import get_bursa_market_data
 
 __all__ = [
     # Version

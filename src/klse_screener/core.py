@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 def _extract_code(ticker: str) -> str:
     """Extract numeric code from ticker like '5132.KL'."""
-    return re.sub(r"\..*$", "", ticker.upper()).lstrip("0") or ticker
+    code = re.sub(r"\..*$", "", ticker.upper())
+    return code or ticker
 
 
 def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:

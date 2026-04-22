@@ -12,7 +12,7 @@ from klse_screener.financials import (
     get_klse_key_ratios,
     get_klse_quarterly_financials_dict,
     get_klse_annual_financials_dict,
-    get_klse_fundamentals_combined,
+    get_klse_fundamentals_mf_enhanced,
 )
 from klse_screener.price_history import (
     scrape_ohlcv_raw,
@@ -131,14 +131,14 @@ class TestGetKlseAnnualFinancialsDict:
 
 
 class TestGetKlseFundamentalsCombined:
-    """Test get_klse_fundamentals_combined() function"""
+    """Test get_klse_fundamentals_mf_enhanced() function"""
     
     def test_valid_ticker(self):
         """Test with valid KLSE ticker"""
-        result = get_klse_fundamentals_combined("5132.KL")
+        result = get_klse_fundamentals_mf_enhanced("5132.KL")
         
         assert isinstance(result, dict)
-        assert result.get("data_source") == "klsescreener_combined"
+        assert result.get("data_source") == "klsescreener_mf_enhanced"
         
         # Should have key ratios
         assert "market_cap" in result
@@ -159,25 +159,25 @@ class TestGetKlseFundamentalsCombined:
     
     def test_combines_all_data(self):
         """Verify combined function returns data from all sources"""
-        combined = get_klse_fundamentals_combined("5132.KL")
+        result_mf = get_klse_fundamentals_mf_enhanced("5132.KL")
         key_ratios = get_klse_key_ratios("5132.KL")
         quarterly = get_klse_quarterly_financials_dict("5132.KL")
         
         # Combined should have key ratios fields
-        assert combined.get("pe_ratio") == key_ratios.get("pe_ratio")
+        assert result_mf.get("pe_ratio") == key_ratios.get("pe_ratio")
         
         # Combined should have quarterly TTM fields
-        assert combined.get("ttm_revenue") == quarterly.get("ttm_revenue")
+        assert result_mf.get("ttm_revenue") == quarterly.get("ttm_revenue")
     
     def test_alias_function(self):
         """Test get_klse_fundamentals() alias"""
         from klse_screener.financials import get_klse_fundamentals
         
         result = get_klse_fundamentals("5132.KL")
-        combined = get_klse_fundamentals_combined("5132.KL")
+        result_mf = get_klse_fundamentals_mf_enhanced("5132.KL")
         
         # Should be identical
-        assert result == combined
+        assert result == result_mf
 
 
 class TestScrapeOhlcvRaw:
@@ -298,7 +298,7 @@ class TestBackwardCompatibility:
     
     def test_combined_has_mf_approximations(self):
         """Verify combined function has MF approximations (project requirement)"""
-        result = get_klse_fundamentals_combined("5132.KL")
+        result = get_klse_fundamentals_mf_enhanced("5132.KL")
         
         # MF approximation fields
         assert "approx_ebit_ttm" in result
@@ -313,7 +313,7 @@ class TestBackwardCompatibility:
             pandas_installed = False
         
         # Functions should work regardless
-        result = get_klse_fundamentals_combined("5132.KL")
+        result = get_klse_fundamentals_mf_enhanced("5132.KL")
         assert isinstance(result, dict)
         
         # Return type should be dict, not DataFrame

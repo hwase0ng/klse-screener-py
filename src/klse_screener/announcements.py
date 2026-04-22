@@ -211,4 +211,5 @@ def get_klse_general_meetings(ticker: str, limit: int = 20) -> List[Dict[str, An
 
 def _extract_code(ticker: str) -> str:
     """Extract numeric code from ticker like '5132.KL'."""
-    return re.sub(r"\..*$", "", ticker.upper()).lstrip("0") or ticker
+    code = re.sub(r"\..*$", "", ticker.upper())
+    return code or ticker

@@ -87,15 +87,15 @@ def scrape_ohlcv_raw(symbol: str, period: str = '30d') -> List[Dict[str, Any]]:
     """
     
     if period == '30d':
-        return _scrape_30day_history(symbol, market)
+        return _scrape_30day_history(symbol)
     elif period == '10y':
-        return _scrape_10year_chart(symbol, market)
+        return _scrape_10year_chart(symbol)
     else:
         logger.error(f"Unknown period: {period}. Use '30d' or '10y'")
         return []
 
 
-def _scrape_30day_history(symbol: str, market: str = 'KLSE') -> List[Dict[str, Any]]:
+def _scrape_30day_history(symbol: str) -> List[Dict[str, Any]]:
     """
     Fetch 30-day historical price data.
     
@@ -168,7 +168,7 @@ def _scrape_30day_history(symbol: str, market: str = 'KLSE') -> List[Dict[str, A
         return []
 
 
-def _scrape_10year_chart(symbol: str, market: str = 'KLSE') -> List[Dict[str, Any]]:
+def _scrape_10year_chart(symbol: str) -> List[Dict[str, Any]]:
     """
     Fetch 10-year chart data from embedded chart endpoint.
     
