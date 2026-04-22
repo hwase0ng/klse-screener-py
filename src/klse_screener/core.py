@@ -24,10 +24,6 @@ from typing import Any, Dict, List, Optional
 from bs4 import BeautifulSoup
 
 from .http import fetch_url
-# KLSE-only library - no market detection needed
-def is_klse(ticker: str) -> bool:
-    """KLSE-only library - always returns True"""
-    return True
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +45,6 @@ def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with fundamentals data, or empty dict if not KLSE
     """
-    if not is_klse(ticker):
-        return {}
 
     try:
         code = _extract_code(ticker)
@@ -149,8 +143,6 @@ def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
         >>> for item in news:
         ...     print(f"{item['title']}: {item['url']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -195,8 +187,6 @@ def get_klse_announcements_raw(ticker: str, limit: int = 10) -> List[Dict[str, s
         >>> for item in ann:
         ...     print(f"{item['date']}: {item['title']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -247,8 +237,6 @@ def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         >>> for div in divs:
         ...     print(f"Ex: {div['ex_date']}, Pay: {div['payment_date']}, Amt: {div['dividend_amount']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -306,8 +294,6 @@ def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> List[Dict[str, 
         >>> for change in changes:
         ...     print(f"{change['date']}: {change['change_type']} - {change['description']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -362,8 +348,6 @@ def get_klse_warrants_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         >>> for w in warrants:
         ...     print(f"{w['name']}: Last={w['last_price']}, Vol={w['volume']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -418,8 +402,6 @@ def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict
         >>> for change in changes:
         ...     print(f"{change['name']}: {change['shares']} shares on {change['date']}")
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -489,8 +471,6 @@ def get_klse_intraday_stats(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with intraday stats, or empty dict
     """
-    if not is_klse(ticker):
-        return {}
 
     try:
         code = _extract_code(ticker)
@@ -558,8 +538,6 @@ def get_klse_full_report(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with all data, or empty dict
     """
-    if not is_klse(ticker):
-        return {}
 
     return {
         "fundamentals": get_klse_fundamentals(ticker),
@@ -598,8 +576,6 @@ def get_klse_quarterly_history(ticker: str, limit: int = 20) -> str:
         stacklevel=2
     )
     
-    if not is_klse(ticker):
-        return ""
 
     try:
         code = _extract_code(ticker)
@@ -720,8 +696,6 @@ def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with basic + enhanced fundamentals
     """
-    if not is_klse(ticker):
-        return {}
 
     try:
         basic = get_klse_fundamentals(ticker)
@@ -784,8 +758,6 @@ def get_klse_trade_summary(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with order book data
     """
-    if not is_klse(ticker):
-        return {}
 
     try:
         code = _extract_code(ticker)
@@ -909,8 +881,6 @@ def get_klse_trade_details(ticker: str, limit: int = 50) -> List[Dict[str, Any]]
     Returns:
         List of trade dicts
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)
@@ -975,8 +945,6 @@ def get_klse_comments(ticker: str, limit: int = 30) -> List[Dict[str, Any]]:
     Returns:
         List of comment dicts
     """
-    if not is_klse(ticker):
-        return []
 
     try:
         code = _extract_code(ticker)

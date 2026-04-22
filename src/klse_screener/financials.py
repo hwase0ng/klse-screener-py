@@ -19,10 +19,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from bs4 import BeautifulSoup
 
 from .http import fetch_url
-# KLSE-only library
-def is_klse(ticker: str) -> bool:
-    """KLSE-only - always True"""
-    return True
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +116,6 @@ def get_klse_key_ratios(ticker: str) -> Dict[str, Any]:
             "rsi_14": "Oversold (28.5)"
         }
     """
-    if not is_klse(ticker):
-        return {}
     
     try:
         code = _extract_code(ticker)
@@ -222,8 +216,6 @@ def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
             "ttm_eps": 0.58
         }
     """
-    if not is_klse(ticker):
-        return {}
     
     try:
         code = _extract_code(ticker)
@@ -373,8 +365,6 @@ def get_klse_annual_financials_dict(ticker: str) -> Dict[str, Any]:
             ]
         }
     """
-    if not is_klse(ticker):
-        return {}
     
     try:
         code = _extract_code(ticker)
@@ -478,8 +468,6 @@ def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
         Consolidated dict suitable for Magic Formula calculations.
         Returns empty dict for non-KLSE tickers.
     """
-    if not is_klse(ticker):
-        return {}
     
     try:
         # Fetch all data
