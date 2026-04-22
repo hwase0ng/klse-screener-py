@@ -47,6 +47,9 @@ from .financial_reports import (
     get_klse_market_announcements,
 )
 
+# NEW: Bursa market data
+from .market_data import get_bursa_market_data
+
 # NEW: Structured financial data (pandas-free)
 from .financials import (
     get_klse_key_ratios,
@@ -67,6 +70,9 @@ from .qr_announcements import (
     get_klse_announcements_by_ticker,
     get_klse_financial_reports_by_ticker,
 )
+
+# NEW: Market-wide data (Bursa Malaysia)
+from .market_data import get_bursa_market_data
 
 __all__ = [
     # Version
@@ -109,16 +115,6 @@ __all__ = [
     "fetch_url",
     "reset_rate_limit",
     "clear_cache",
-    # Structured financial data (pandas-free)
-    "get_klse_key_ratios",
-    "get_klse_quarterly_financials_dict",
-    "get_klse_annual_financials_dict",
-    "get_klse_fundamentals_mf_enhanced",  # Recommended for Magic Formula
-    # Price history (pandas-free)
-    "scrape_ohlcv_raw",
-    "get_klse_price_history",
-    # QR announcements
-    "get_klse_daily_financial_reports",
-    "get_klse_announcements_by_ticker",
-    "get_klse_financial_reports_by_ticker",
+    # Bursa market data (NEW)
+    "get_bursa_market_data",
 ]
