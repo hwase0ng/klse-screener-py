@@ -231,12 +231,12 @@ def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         limit: Maximum number of dividends (default: 5)
 
     Returns:
-        List of dicts with keys: ex_date, payment_date, dividend_amount, type
+        List of dicts with keys: announcement_date, financial_year, ex_date, dividend_amount, payment_date, type, basis
 
     Example:
         >>> divs = get_klse_dividends_raw("5132.KL", limit=3)
         >>> for div in divs:
-        ...     print(f"Ex: {div['ex_date']}, Pay: {div['payment_date']}, Amt: {div['dividend_amount']}")
+        ...     print(f"Ann: {div['announcement_date']}, Ex: {div['ex_date']}, Amt: {div['dividend_amount']}")
     """
 
     try:
@@ -262,11 +262,11 @@ def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
             if len(clean) >= 7 and clean[3]:
                 results.append({
                     "announcement_date": clean[0],
-                    "entitlement_date": clean[1],
-                    "ex_date": clean[2],
-                    "dividend_amount": clean[3],
+                    "financial_year": clean[1],
+                    "ex_date": clean[3],
+                    "dividend_amount": clean[5],
                     "payment_date": clean[4],
-                    "type": clean[5],
+                    "type": clean[2],
                     "basis": clean[6] if len(clean) > 6 else ""
                 })
                 count += 1
