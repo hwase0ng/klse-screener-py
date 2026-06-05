@@ -71,6 +71,13 @@ from .qr_announcements import (
     get_klse_financial_reports_by_ticker,
 )
 
+# NEW: Sector mapping
+from .sectors import (
+    get_klse_sector_stocks,
+    get_klse_all_sector_stocks,
+    get_klse_sector_info,
+)
+
 
 __all__ = [
     # Version
@@ -115,4 +122,8 @@ __all__ = [
     "clear_cache",
     # Bursa market data (NEW)
     "get_bursa_market_data",
+    # Sector mapping (NEW)
+    "get_klse_sector_stocks",
+    "get_klse_all_sector_stocks",
+    "get_klse_sector_info",
 ]
