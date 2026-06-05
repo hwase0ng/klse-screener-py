@@ -151,6 +151,7 @@ class TestGetKlseSectorInfo:
 
 
 class TestGetKlseSectorStocks:
+    @pytest.mark.live
     def test_returns_list(self):
         result = get_klse_sector_stocks("0001I")
         assert isinstance(result, list)
@@ -159,24 +160,27 @@ class TestGetKlseSectorStocks:
         result = get_klse_sector_stocks("INVALID")
         assert result == []
 
+    @pytest.mark.live
     def test_stock_dict_structure(self):
         result = get_klse_sector_stocks("0001I")
-        if result:
-            stock = result[0]
-            assert "code" in stock
-            assert "symbol" in stock
-            assert "name" in stock
-            assert "price" in stock
-            assert "change_pct" in stock
-            assert "subsector" in stock
+        assert len(result) > 0, "Live test: no stocks returned"
+        stock = result[0]
+        assert "code" in stock
+        assert "symbol" in stock
+        assert "name" in stock
+        assert "price" in stock
+        assert "change_pct" in stock
+        assert "subsector" in stock
 
+    @pytest.mark.live
     def test_symbol_format(self):
         result = get_klse_sector_stocks("0001I")
-        if result:
-            for stock in result:
-                assert stock["symbol"].endswith(".KL")
+        assert len(result) > 0, "Live test: no stocks returned"
+        for stock in result:
+            assert stock["symbol"].endswith(".KL")
 
 
+@pytest.mark.live
 class TestGetKlseAllSectorStocks:
     def test_returns_dict(self):
         result = get_klse_all_sector_stocks()

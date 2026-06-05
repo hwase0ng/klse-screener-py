@@ -8,7 +8,9 @@ Source: https://www.klsescreener.com/v2/markets/bursa/{sector_code}
 
 import logging
 import re
-from typing import Dict, List, Any
+from typing import Dict, List
+
+from bs4 import BeautifulSoup
 
 from .http import fetch_url
 
@@ -46,8 +48,6 @@ def _parse_sector_stocks_html(html: str) -> List[Dict[str, str]]:
     """
     if not html:
         return []
-
-    from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(html, "html.parser")
     stocks = []
@@ -119,20 +119,20 @@ def get_klse_sector_stocks(sector_code: str) -> List[Dict[str, str]]:
         List of stock dicts with keys: code, symbol, name, price, change_pct, subsector
     """
     if sector_code not in KLSE_SECTOR_CODES:
-        logger.warning(f"Unknown sector code: {sector_code}")
+        logger.warning("Unknown sector code: %s", sector_code)
         return []
 
     url = f"{SECTOR_URL_BASE}/{sector_code}"
     cache_key = f"sector_{sector_code}"
 
     try:
-        logger.info(f"Fetching sector {sector_code} from {url}")
+        logger.info("Fetching sector %s from %s", sector_code, url)
         html = fetch_url(url, cache_key)
         stocks = _parse_sector_stocks_html(html)
-        logger.info(f"Parsed {len(stocks)} stocks for sector {sector_code}")
+        logger.info("Parsed %d stocks for sector %s", len(stocks), sector_code)
         return stocks
     except Exception as e:
-        logger.error(f"Failed to fetch sector {sector_code}: {e}")
+        logger.error("Failed to fetch sector %s: %s: %s", sector_code, type(e).__name__, e)
         return []
 
 
@@ -143,7 +143,7 @@ def get_klse_all_sector_stocks() -> Dict[str, List[Dict[str, str]]]:
         Dict mapping sector code to list of stock dicts.
 
     Note:
-        Makes 13 HTTP requests with 2s rate limiting (~26s total).
+        Rate limiting is handled by fetch_url (2s interval between requests).
     """
     result = {}
     for code in KLSE_SECTOR_CODES:
