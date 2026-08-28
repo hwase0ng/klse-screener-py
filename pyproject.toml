@@ -8,7 +8,7 @@ version = "3.3.0"
 description = "KLSE Screener Python Library - Malaysian (KLSE/Bursa) stock data scraper with fundamentals, price history, and announcements"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license = { text = "MIT" }
 authors = [{ name = "hwaseong" }]
 keywords = ["klse", "bursa", "malaysia", "stocks", "screener", "financial-data"]
 classifiers = [
