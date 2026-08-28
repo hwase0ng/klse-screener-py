@@ -509,6 +509,162 @@ def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
         return {}
 
 
+def get_klse_financial_report_figures(
+    code: str,
+    quarter_end_date: str,
+    return_html: bool = False,
+) -> Dict[str, Any]:
+    """
+    Fetch P&L figures from a KLSE Screener financial-report page.
+
+    URL:
+        https://www.klsescreener.com/v2/stock/financial-report/{code}/{quarter_end_date}
+
+    Parses the P&L table using label-anchored row matching (robust against
+    KLSE-injected "AI insight" rows that shift positional indices) and targets
+    the "Individual Period - Current Year Quarter" column.
+
+    Scale handling (page shows MYR'000 for monetary rows):
+        - Revenue, Profit Before Tax, Attributable → multiplied by 1000 (raw RM).
+        - EPS / DPS (sen) and NAPS / NTA (RM) returned as-is.
+
+    Args:
+        code: Numeric KLSE code or ticker (e.g. "0012" or "0012.KL").
+        quarter_end_date: Quarter end date "YYYY-MM-DD" (e.g. "2026-06-30").
+        return_html: If True, include the raw page HTML under "_html"
+            (needed by downstream Bursa attachment-id extraction).
+
+    Returns:
+        On success:
+            {
+                "data_source": "klsescreener_financial_report",
+                "profit_before_tax": float,
+                "profit_attributable_parent": float,
+                "nta_parent": float,
+                "eps": float,
+                "dps": float,
+                "revenue": float,
+                "_html": <page html>   # only if return_html=True
+            }
+        On error / 403 / no content:
+            {"error": "<message>"}
+    """
+
+    try:
+        c = _extract_code(code)
+        url = f"https://www.klsescreener.com/v2/stock/financial-report/{c}/{quarter_end_date}"
+        html = fetch_url(url, f"fin_report_{c}_{quarter_end_date}")
+
+        if not html:
+            return {"error": "empty response from klsescreener financial-report page"}
+
+        # Crude 403 / block detection.
+        low = html.lower()
+        if "403 forbidden" in low or "access denied" in low:
+            return {"error": "403 forbidden / access denied from klsescreener"}
+
+        # Label-anchored row -> field mapping (predicate-based to survive the
+        # way KLSE words labels: "Profit/(loss) before tax",
+        # "Profit/(loss) attributable to ... parent", "Net assets per share
+        # attributable to ... parent"). Monetary rows (Revenue, PBT, Attributable)
+        # are MYR'000 on the page and are scaled x1000 below.
+        monetary = {"revenue", "profit_before_tax", "profit_attributable_parent"}
+        field_predicates = [
+            ("revenue", lambda s: "revenue" in s),
+            ("profit_before_tax", lambda s: "before tax" in s),
+            (
+                "profit_attributable_parent",
+                lambda s: "attributable" in s and "net assets" not in s,
+            ),
+            (
+                "eps",
+                lambda s: "earnings" in s and "per share" in s,
+            ),
+            ("dps", lambda s: "dividend per share" in s),
+            (
+                "nta_parent",
+                lambda s: "net assets per share" in s or s == "nta" or s.startswith("NAPS"),
+            ),
+        ]
+
+        soup = BeautifulSoup(html, "html.parser")
+        tables = soup.find_all("table")
+        if not tables:
+            return {"error": "no financial table found on page"}
+
+        # The page has several tables (info, attachments, currency legend, ...).
+        # Pick the P&L table by the presence of a known financial label.
+        table = None
+        for t in tables:
+            ttext = t.get_text(" ").lower()
+            if "before tax" in ttext or "revenue" in ttext:
+                table = t
+                break
+        if table is None:
+            return {"error": "no financial-report P&L table found on page"}
+
+        rows = table.find_all("tr")
+        if not rows:
+            return {"error": "financial table has no rows"}
+
+        # Label-anchored parsing. KLSE uses two table layouts:
+        #   (A) simple header row with "Individual Period - Current Year Q..." as a
+        #       th, label in col 0, value in col 1;
+        #   (B) merged-grouped header where data rows carry a leading index cell
+        #       (e.g. '1') then the label, with the "Current Year Quarter" value
+        #       immediately after the label.
+        # Both put the target value directly after the label cell, so we match the
+        # label and take cells[label_idx + 1] - robust to AI-insight rows and to
+        # either header layout.
+
+        result: Dict[str, Any] = {
+            "data_source": "klsescreener_financial_report",
+            "profit_before_tax": None,
+            "profit_attributable_parent": None,
+            "nta_parent": None,
+            "eps": None,
+            "dps": None,
+            "revenue": None,
+        }
+
+        for tr in rows:
+            cells = [_clean_html_text(c.get_text(" ")) for c in tr.find_all(["th", "td"])]
+            if len(cells) < 3:
+                continue
+            # Locate the label cell in this row.
+            label_idx = None
+            label = ""
+            for i, cell in enumerate(cells):
+                low = cell.lower()
+                if any(pred(low) for _, pred in field_predicates):
+                    label_idx = i
+                    label = low
+                    break
+            if label_idx is None:
+                continue
+            if label_idx + 1 >= len(cells):
+                continue
+            raw = cells[label_idx + 1]
+            value = _parse_formatted_number(raw)
+            if value is None:
+                continue
+            for field, pred in field_predicates:
+                if pred(label):
+                    result[field] = value * 1000 if field in monetary else value
+                    break
+
+        if return_html:
+            result["_html"] = html
+
+        return result
+
+    except Exception as e:  # fetch_url has no backoff; never let one page kill the run
+        logger.error(
+            f"get_klse_financial_report_figures failed for {code} {quarter_end_date}: {e}"
+        )
+        return {"error": str(e)}
+
+
 # Convenience alias for backward compatibility with project
 def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
     """

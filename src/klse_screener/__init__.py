@@ -56,6 +56,7 @@ from .financials import (
     get_klse_quarterly_financials_dict,
     get_klse_annual_financials_dict,
     get_klse_fundamentals_mf_enhanced,
+    get_klse_financial_report_figures,
 )
 
 # NEW: Price history (pandas-free)
@@ -122,6 +123,8 @@ __all__ = [
     "clear_cache",
     # Bursa market data (NEW)
     "get_bursa_market_data",
+    # Structured financial report figures (NEW)
+    "get_klse_financial_report_figures",
     # Sector mapping (NEW)
     "get_klse_sector_stocks",
     "get_klse_all_sector_stocks",
