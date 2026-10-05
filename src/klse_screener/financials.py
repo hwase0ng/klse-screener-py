@@ -90,6 +90,45 @@ def _clean_html_text(text: str) -> str:
     return clean.strip()
 
 
+def _percent_sign_class(cell: Any) -> Optional[int]:
+    """Direction of a percentage cell, encoded only in its CSS class.
+
+    KLSE Screener prints QoQ%/YoY% as *unsigned* magnitudes ("29.1%") and encodes
+    direction solely in the inner span's ``btn-success`` / ``btn-danger`` class.
+    ``get_text()`` discards class attributes, so ``_clean_html_text`` returns the
+    bare magnitude and every decline parsed as a gain.
+
+    Returns -1 for ``btn-danger``, +1 for ``btn-success``, and None when the cell
+    carries no sign class (monetary and ROE cells, which use a literal minus and
+    must keep parsing through ``_parse_formatted_number`` untouched).
+    """
+    span = cell.find("span")
+    classes = span.get("class") if span is not None else cell.get("class")
+    if not classes:
+        return None
+    if "btn-danger" in classes:
+        return -1
+    if "btn-success" in classes:
+        return 1
+    return None
+
+
+def _apply_percent_sign(value: Optional[float], sign: Optional[int]) -> Optional[float]:
+    """Apply a class-derived sign to an already-parsed magnitude.
+
+    The class is authoritative: a classed QoQ%/YoY% cell is unsigned by
+    construction (the fixture shows '41%', '14.2%', '0.9%' -- never a literal
+    minus), so ``sign * abs(value)`` both fixes the missing sign and prevents a
+    double negation when the class already reads "decline".
+
+    None (no class) and 0.0 pass through untouched -- an unclassed cell keeps its
+    literal minus, and zero is not a decline however it is badged.
+    """
+    if value is None or sign is None or value == 0:
+        return value
+    return sign * abs(value)
+
+
 def get_klse_key_ratios(ticker: str) -> Dict[str, Any]:
     """
     Fetch key ratios for a KLSE stock from KLSE Screener.
@@ -267,9 +306,13 @@ def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
         quarterly_data = []
         for row in rows[1:]:  # Skip header row
             cells = row.find_all(["td", "th"])
-            cell_texts = [
-                _clean_html_text(c.get_text()) for c in cells if c.get_text(strip=True)
-            ]
+            # Single pass over the same visible-cell filter used before, so the
+            # parallel cell_signs list stays index-aligned with cell_texts.
+            visible = [c for c in cells if c.get_text(strip=True)]
+            cell_texts = [_clean_html_text(c.get_text()) for c in visible]
+            # QoQ%/YoY% (columns 10/11) carry direction only in the inner span's
+            # btn-success/btn-danger class, which get_text() throws away.
+            cell_signs = [_percent_sign_class(c) for c in visible]
             
             # Skip year header rows (single cell with date)
             if len(cell_texts) == 1 and "," in cell_texts[0]:
@@ -292,8 +335,12 @@ def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
                     financial_year = cell_texts[7] if len(cell_texts) > 7 else None
                     announced = cell_texts[8] if len(cell_texts) > 8 else None
                     roe = _parse_formatted_number(cell_texts[9]) if len(cell_texts) > 9 else None
-                    qoq = _parse_formatted_number(cell_texts[10]) if len(cell_texts) > 10 else None
-                    yoy = _parse_formatted_number(cell_texts[11]) if len(cell_texts) > 11 else None
+                    qoq = _apply_percent_sign(
+                        _parse_formatted_number(cell_texts[10]), cell_signs[10]
+                    ) if len(cell_texts) > 10 else None
+                    yoy = _apply_percent_sign(
+                        _parse_formatted_number(cell_texts[11]), cell_signs[11]
+                    ) if len(cell_texts) > 11 else None
                     
                     quarterly_data.append({
                         "eps": eps,
