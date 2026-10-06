@@ -137,12 +137,21 @@ def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
         limit: Maximum number of news items (default: 10)
 
     Returns:
-        List of dicts with keys: title, url
+        List of dicts with keys: title, url, date, excerpt.
+        ``date`` is ISO-ish "YYYY-MM-DD HH:MM:SS" as published, or "" when the
+        page omits it. ``excerpt`` is the article's summary paragraph, which on
+        KLSE Screener usually names the exact reporting period (e.g. "quarter
+        ended June 30, 2025 (2QFY2025)"), so a caller can date-stamp a claim.
+
+    Each item is parsed from its own ``item figure flex-block`` rather than by
+    matching every ``/v2/news/view/`` link on the page, because that page also
+    carries market and general news whose links the old flat regex swept in.
+    For 0012.KL that meant 8 of 10 "stock-specific" items were unrelated news.
 
     Example:
         >>> news = get_klse_news_raw("5132.KL", limit=5)
         >>> for item in news:
-        ...     print(f"{item['title']}: {item['url']}")
+        ...     print(f"{item.get('date')}: {item['title']}")
     """
 
     try:
@@ -150,21 +159,45 @@ def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
         url = f"https://www.klsescreener.com/v2/news/stock/{code}"
         html = fetch_url(url, f"news_{code}")
 
-        items = re.findall(
-            r'<a[^>]*href="(/v2/news/view/[^"]+)"[^>]*>\s*(.*?)\s*</a>',
-            html,
-            re.DOTALL,
+        link_re = re.compile(
+            r'href="(/v2/news/view/[^"]+)"[^>]*>(.*?)</a>', re.DOTALL
         )
+        date_re = re.compile(r'<span data-date="([^"]+)"')
 
         seen = set()
         results: List[Dict[str, str]] = []
-        for url_path, title in items:
-            clean = re.sub(r"<[^>]+>", "", title).strip()
-            if clean and clean not in seen:
-                seen.add(clean)
-                results.append({"title": clean, "url": f"https://www.klsescreener.com{url_path}"})
-                if len(results) >= limit:
-                    break
+        for block in re.split(r'<div class="item figure flex-block">', html)[1:]:
+            match = link_re.search(block)
+            if not match:
+                continue
+            clean = re.sub(r"<[^>]+>", "", match.group(2)).strip()
+            if not clean or clean in seen:
+                continue
+            seen.add(clean)
+
+            # Publication timestamp lives in the subtitle block, alongside the
+            # source name and a relative age ("1 year"). It was present on the
+            # page for every item and is what makes a stale headline detectable.
+            date_match = date_re.search(block)
+            published = date_match.group(1).strip() if date_match else ""
+
+            # The summary paragraph directly under the headline.
+            excerpt = ""
+            after = block[match.end():]
+            body = re.search(r"</h2>\s*</div>\s*<div>(.*?)</div>", after, re.DOTALL)
+            if body:
+                excerpt = re.sub(r"<[^>]+>", "", body.group(1)).strip()
+
+            results.append(
+                {
+                    "title": clean,
+                    "url": f"https://www.klsescreener.com{match.group(1)}",
+                    "date": published,
+                    "excerpt": excerpt,
+                }
+            )
+            if len(results) >= limit:
+                break
 
         return results
 
