@@ -71,6 +71,10 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Local dev/tooling (libraries should not commit uv.lock)
+uv.lock
+opencode.json
+
 # Jupyter Notebook
 .ipynb_checkpoints
 .pypirc

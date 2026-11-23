@@ -1,10 +1,10 @@
 """Example: Basic usage of klse-screener-py."""
 
 from klse_screener import (
-    get_klse_fundamentals,
-    get_klse_news,
-    get_klse_trade_summary,
     get_klse_comments_formatted,
+    get_klse_fundamentals,
+    get_klse_news_raw,
+    get_klse_trade_summary,
 )
 
 
@@ -29,8 +29,12 @@ def main():
 
     # News
     print("## News")
-    news = get_klse_news(ticker, limit=5)
-    print(news if news else "  No recent news")
+    news = get_klse_news_raw(ticker, limit=5)
+    for item in news:
+        date = f"[{item['date'][:10]}] " if item.get("date") else ""
+        print(f"  {date}{item['title']}")
+    if not news:
+        print("  No recent news")
     print()
 
     # Order Book
