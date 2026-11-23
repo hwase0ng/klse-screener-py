@@ -208,6 +208,10 @@ ruff check src/ tests/
 
 ## Changelog
 
+### 3.4.1 (2026-11-23)
+- Fixed `project.urls` (Homepage/Repository) pointing at the wrong GitHub org
+- Fixed the same wrong URLs in `docs/MIGRATION_TO_V2.md` and `docs/INTEGRATION_COMPLETE.md`
+
 ### 3.4.0 (2026-11-23)
 - Fixed `get_klse_full_report` crash (missing import + removed call to a non-existent market-sentiment function)
 - Fixed `get_klse_enhanced_fundamentals` masking errors via an unbound variable in its exception path
