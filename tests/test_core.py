@@ -1,14 +1,14 @@
 """Tests for KLSE Screener core functions."""
 
 import pytest
+
 from klse_screener import (
+    get_klse_announcements_raw,
+    get_klse_comments,
     get_klse_fundamentals,
     get_klse_news_raw,
-    get_klse_announcements_raw,
     get_klse_trade_summary,
-    get_klse_comments,
 )
-
 
 # Test tickers
 KLSE_TICKER = "5132.KL"  # Deleum Berhad - active stock
@@ -36,28 +36,32 @@ class TestGetKlseFundamentals:
 
 
 class TestGetKlseNews:
-    """Test get_klse_news function."""
+    """Test get_klse_news_raw function."""
 
     @pytest.mark.skip(reason="Requires live API access")
     def test_news_format(self):
-        """Verify news format."""
+        """Verify news is a list of dicts with title/date/excerpt."""
         result = get_klse_news_raw(KLSE_TICKER, limit=5)
-        assert isinstance(result, str)
-        if result:  # May be empty if no news
-            assert "## KLSE Screener News" in result
-            assert result.count("- ") <= 5
+        assert isinstance(result, list)
+        assert len(result) <= 5
+        for item in result:
+            assert "title" in item
+            assert "date" in item
+            assert "excerpt" in item
+            assert "url" in item
 
 
 class TestGetKlseAnnouncements:
-    """Test get_klse_announcements function."""
+    """Test get_klse_announcements_raw function."""
 
     @pytest.mark.skip(reason="Requires live API access")
     def test_announcements_format(self):
-        """Verify announcements format."""
+        """Verify announcements is a list of dicts."""
         result = get_klse_announcements_raw(KLSE_TICKER, limit=5)
-        assert isinstance(result, str)
-        if result:
-            assert "## Bursa Malaysia Announcements" in result
+        assert isinstance(result, list)
+        assert len(result) <= 5
+        for item in result:
+            assert isinstance(item, dict)
 
 
 class TestGetKlseTradeSummary:

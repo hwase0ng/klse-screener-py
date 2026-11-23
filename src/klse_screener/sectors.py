@@ -8,7 +8,6 @@ Source: https://www.klsescreener.com/v2/markets/bursa/{sector_code}
 
 import logging
 import re
-from typing import Dict, List
 
 from bs4 import BeautifulSoup
 
@@ -16,7 +15,7 @@ from .http import fetch_url
 
 logger = logging.getLogger(__name__)
 
-KLSE_SECTOR_CODES: Dict[str, str] = {
+KLSE_SECTOR_CODES: dict[str, str] = {
     "0001I": "CONSUMER PRODUCTS & SERVICES",
     "0002I": "INDUSTRIAL PRODUCTS & SERVICES",
     "0003I": "CONSTRUCTION",
@@ -35,7 +34,7 @@ KLSE_SECTOR_CODES: Dict[str, str] = {
 SECTOR_URL_BASE = "https://www.klsescreener.com/v2/markets/bursa"
 
 
-def _parse_sector_stocks_html(html: str) -> List[Dict[str, str]]:
+def _parse_sector_stocks_html(html: str) -> list[dict[str, str]]:
     """Parse stock cards from sector page HTML.
 
     Each card contains: stock link, price, market cap, change %, subsector.
@@ -97,7 +96,7 @@ def _parse_sector_stocks_html(html: str) -> List[Dict[str, str]]:
     return stocks
 
 
-def get_klse_sector_info() -> Dict[str, Dict[str, str]]:
+def get_klse_sector_info() -> dict[str, dict[str, str]]:
     """Get KLSE sector code-to-name mapping.
 
     Returns:
@@ -109,7 +108,7 @@ def get_klse_sector_info() -> Dict[str, Dict[str, str]]:
     }
 
 
-def get_klse_sector_stocks(sector_code: str) -> List[Dict[str, str]]:
+def get_klse_sector_stocks(sector_code: str) -> list[dict[str, str]]:
     """Scrape stocks belonging to a KLSE sector.
 
     Args:
@@ -136,7 +135,7 @@ def get_klse_sector_stocks(sector_code: str) -> List[Dict[str, str]]:
         return []
 
 
-def get_klse_all_sector_stocks() -> Dict[str, List[Dict[str, str]]]:
+def get_klse_all_sector_stocks() -> dict[str, list[dict[str, str]]]:
     """Scrape stocks for all 13 KLSE sectors.
 
     Returns:

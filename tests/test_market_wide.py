@@ -1,16 +1,17 @@
 """Tests for market-wide KLSE functions."""
 
 import pytest
+
 from klse_screener import (
-    get_klse_dividend_calendar,
-    get_klse_corporate_actions,
     get_klse_announcements_by_category,
+    get_klse_corporate_actions,
     get_klse_dividend_announcements,
-    get_klse_insider_dealings,
-    get_klse_financial_results,
-    get_klse_share_buybacks,
+    get_klse_dividend_calendar,
     get_klse_financial_reports,
+    get_klse_financial_results,
+    get_klse_insider_dealings,
     get_klse_market_announcements,
+    get_klse_share_buybacks,
 )
 
 

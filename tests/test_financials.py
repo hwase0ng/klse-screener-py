@@ -6,21 +6,20 @@ that will replace the string-returning functions in v2.0.
 """
 
 import pytest
-from datetime import datetime
 
 from klse_screener.financials import (
-    get_klse_key_ratios,
-    get_klse_quarterly_financials_dict,
     get_klse_annual_financials_dict,
     get_klse_fundamentals_mf_enhanced,
+    get_klse_key_ratios,
+    get_klse_quarterly_financials_dict,
 )
 from klse_screener.price_history import (
-    scrape_ohlcv_raw,
     get_klse_price_history,
+    scrape_ohlcv_raw,
 )
 from klse_screener.qr_announcements import (
-    get_klse_daily_financial_reports,
     get_klse_announcements_by_ticker,
+    get_klse_daily_financial_reports,
 )
 
 
@@ -57,7 +56,7 @@ class TestGetKlseKeyRatios:
         result = get_klse_key_ratios("5132.KL")
         assert isinstance(result, dict)
         # Dict should be structured data, not formatted text
-        for key, value in result.items():
+        for value in result.values():
             # Values should be raw data, not formatted strings with newlines
             if isinstance(value, str):
                 assert "\n" not in value
@@ -120,7 +119,7 @@ class TestGetKlseAnnualFinancialsDict:
         assert isinstance(result["annual_data"], list)
     
     def test_returns_dict_not_string(self):
-        """Verify return type is dict (not string like get_klse_annual)"""
+        """Verify return type is dict (not a formatted string)"""
         result = get_klse_annual_financials_dict("5132.KL")
         assert isinstance(result, dict)
         
@@ -308,16 +307,16 @@ class TestBackwardCompatibility:
         """Verify functions don't require pandas (library is pandas-free)"""
         try:
             import pandas as pd
-            pandas_installed = True
         except ImportError:
-            pandas_installed = False
-        
+            pd = None
+
         # Functions should work regardless
         result = get_klse_fundamentals_mf_enhanced("5132.KL")
         assert isinstance(result, dict)
-        
+
         # Return type should be dict, not DataFrame
-        assert not (pandas_installed and isinstance(result, pd.DataFrame))
+        if pd is not None:
+            assert not isinstance(result, pd.DataFrame)
 
 
 if __name__ == "__main__":

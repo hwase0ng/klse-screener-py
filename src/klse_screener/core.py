@@ -19,10 +19,11 @@ import logging
 import re
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup
 
+from .financials import get_klse_annual_financials_dict
 from .http import fetch_url
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ def _extract_code(ticker: str) -> str:
     return code or ticker
 
 
-def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
+def get_klse_fundamentals(ticker: str) -> dict[str, Any]:
     """Fetch fundamentals for a KLSE stock from KLSE Screener.
 
     Returns a structured dict with key ratios and latest quarter data.
@@ -52,7 +53,7 @@ def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
         url = f"https://www.klsescreener.com/v2/stocks/view/{code}"
         html = fetch_url(url, f"stock_{code}")
 
-        result: Dict[str, Any] = {"data_source": "klsescreener"}
+        result: dict[str, Any] = {"data_source": "klsescreener"}
 
         # Company name
         name_match = re.search(r"<h5[^>]*>\s*(\w[\w\s&.()-]+?)(?:</h5>|<)", html)
@@ -129,7 +130,7 @@ def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
         return {"error": str(e)}
 
 
-def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
+def get_klse_news_raw(ticker: str, limit: int = 10) -> list[dict[str, str]]:
     """Fetch stock-specific news from KLSE Screener (raw structured data).
 
     Args:
@@ -165,7 +166,7 @@ def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
         date_re = re.compile(r'<span data-date="([^"]+)"')
 
         seen = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         for block in re.split(r'<div class="item figure flex-block">', html)[1:]:
             match = link_re.search(block)
             if not match:
@@ -206,7 +207,7 @@ def get_klse_news_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
         return []
 
 
-def get_klse_announcements_raw(ticker: str, limit: int = 10) -> List[Dict[str, str]]:
+def get_klse_announcements_raw(ticker: str, limit: int = 10) -> list[dict[str, str]]:
     """Fetch Bursa Malaysia announcements from KLSE Screener (raw structured data).
 
     Args:
@@ -235,7 +236,7 @@ def get_klse_announcements_raw(ticker: str, limit: int = 10) -> List[Dict[str, s
         )
 
         seen = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         for url_path, title, date_str in blocks:
             date_str = date_str.strip()
             clean_title = re.sub(r"<[^>]+>", "", title).strip()
@@ -256,7 +257,7 @@ def get_klse_announcements_raw(ticker: str, limit: int = 10) -> List[Dict[str, s
         return []
 
 
-def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+def get_klse_dividends_raw(ticker: str, limit: int = 5) -> list[dict[str, str]]:
     """Fetch dividend history from KLSE Screener (raw structured data).
 
     Args:
@@ -287,7 +288,7 @@ def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         if not rows:
             return []
 
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         count = 0
         for row in rows:
             cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
@@ -313,7 +314,7 @@ def get_klse_dividends_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         return []
 
 
-def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> list[dict[str, str]]:
     """Fetch capital changes (splits, bonus issues) from KLSE Screener (raw structured data).
 
     Args:
@@ -344,7 +345,7 @@ def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> List[Dict[str, 
         if not rows:
             return []
 
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         count = 0
         for row in rows:
             cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
@@ -367,7 +368,7 @@ def get_klse_capital_changes_raw(ticker: str, limit: int = 5) -> List[Dict[str, 
         return []
 
 
-def get_klse_warrants_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
+def get_klse_warrants_raw(ticker: str, limit: int = 5) -> list[dict[str, str]]:
     """Fetch warrants from KLSE Screener (raw structured data).
 
     Args:
@@ -398,7 +399,7 @@ def get_klse_warrants_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         if not rows:
             return []
 
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         count = 0
         for row in rows:
             cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
@@ -421,7 +422,7 @@ def get_klse_warrants_raw(ticker: str, limit: int = 5) -> List[Dict[str, str]]:
         return []
 
 
-def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict[str, str]]:
+def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> list[dict[str, str]]:
     """Fetch institutional shareholding TRANSACTIONS from KLSE Screener (raw structured data).
 
     Args:
@@ -455,7 +456,7 @@ def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict
         if not rows:
             return []
 
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
         count = 0
         for row in rows:
             cells = re.findall(r"<td[^>]*>\s*(.*?)\s*</td>", row, re.DOTALL)
@@ -481,7 +482,7 @@ def get_klse_shareholding_changes_raw(ticker: str, limit: int = 20) -> List[Dict
 
 
 
-def get_klse_intraday_stats(ticker: str) -> Dict[str, Any]:
+def get_klse_intraday_stats(ticker: str) -> dict[str, Any]:
     """Fetch intraday statistics from KLSE Screener.
 
     Returns:
@@ -561,7 +562,7 @@ def get_klse_intraday_stats(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_full_report(ticker: str) -> Dict[str, Any]:
+def get_klse_full_report(ticker: str) -> dict[str, Any]:
     """Fetch all available KLSE Screener data for a stock.
 
     Returns a consolidated dict with raw structured data.
@@ -582,7 +583,6 @@ def get_klse_full_report(ticker: str) -> Dict[str, Any]:
         "shareholding_changes": get_klse_shareholding_changes_raw(ticker, limit=5),
         "news": get_klse_news_raw(ticker, limit=5),
         "announcements": get_klse_announcements_raw(ticker, limit=5),
-        "market_sentiment": get_klse_market_sentiment_raw(),
     }
 
 
@@ -602,14 +602,12 @@ def get_klse_quarterly_history(ticker: str, limit: int = 20) -> str:
     Deprecated:
         Will be removed in v2.0. Use get_klse_quarterly_financials_dict() for structured data.
     """
-    import warnings
     warnings.warn(
         "get_klse_quarterly_history() is deprecated and will be removed in v2.0. "
         "Use get_klse_quarterly_financials_dict() for structured dict data.",
         DeprecationWarning,
         stacklevel=2
     )
-    
 
     try:
         code = _extract_code(ticker)
@@ -721,7 +719,7 @@ def get_klse_quarterly_history(ticker: str, limit: int = 20) -> str:
         return ""
 
 
-def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
+def get_klse_enhanced_fundamentals(ticker: str) -> dict[str, Any]:
     """Fetch enhanced fundamentals with advanced metrics.
 
     Args:
@@ -730,18 +728,18 @@ def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
     Returns:
         Dict with basic + enhanced fundamentals
     """
-
+    basic: dict[str, Any] = {}
     try:
         basic = get_klse_fundamentals(ticker)
         code = _extract_code(ticker)
         url = f"https://www.klsescreener.com/v2/stocks/view/{code}"
         html = fetch_url(url, f"stock_{code}_enhanced")
 
-        def _extract_metric(pattern: str) -> Optional[str]:
+        def _extract_metric(pattern: str) -> str | None:
             match = re.search(pattern, html, re.IGNORECASE)
             return match.group(1) if match else None
 
-        advanced_metrics: Dict[str, Any] = {
+        advanced_metrics: dict[str, Any] = {
             "debt_to_equity_ratio": _extract_metric(
                 r"(?:debt to equity|gearing ratio|debt/equity)[^<]*</[^>]+>\s*<[^>]+>\s*([0-9,.]+)"
             ),
@@ -756,7 +754,7 @@ def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
             ),
         }
 
-        volume_metrics: Dict[str, Any] = {
+        volume_metrics: dict[str, Any] = {
             "avg_volume_30d": _extract_metric(
                 r"(?:avg vol 30|average volume)[^<]*</[^>]+>\s*<[^>]+>\s*([0-9,.MKb]+)"
             ),
@@ -780,7 +778,7 @@ def get_klse_enhanced_fundamentals(ticker: str) -> Dict[str, Any]:
         return basic if basic else {"error": str(e)}
 
 
-def get_klse_trade_summary(ticker: str) -> Dict[str, Any]:
+def get_klse_trade_summary(ticker: str) -> dict[str, Any]:
     """Fetch order book depth for a KLSE stock.
 
     Returns dict with bid/ask volumes at each price level.
@@ -821,8 +819,8 @@ def get_klse_trade_summary(ticker: str) -> Dict[str, Any]:
                 except ValueError:
                     pass
 
-        bid_levels: List[Dict[str, Any]] = []
-        ask_levels: List[Dict[str, Any]] = []
+        bid_levels: list[dict[str, Any]] = []
+        ask_levels: list[dict[str, Any]] = []
 
         row_pattern = r'<tr class="row-price"[^>]*data-value="([^"]+)".*?</tr>'
         row_matches = re.findall(row_pattern, html, re.DOTALL)
@@ -902,7 +900,7 @@ def get_klse_trade_summary(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_trade_details(ticker: str, limit: int = 50) -> List[Dict[str, Any]]:
+def get_klse_trade_details(ticker: str, limit: int = 50) -> list[dict[str, Any]]:
     """Fetch intraday trade details for a KLSE stock.
 
     Returns list of trades with time, price, change, volume.
@@ -921,7 +919,7 @@ def get_klse_trade_details(ticker: str, limit: int = 50) -> List[Dict[str, Any]]
         url = f"https://www.klsescreener.com/v2/stocks/trade_details/{code}"
         html = fetch_url(url, f"trade_details_{code}")
 
-        trades: List[Dict[str, Any]] = []
+        trades: list[dict[str, Any]] = []
         row_pattern = (
             r'<tr>\s*<td class="">([^<]+)</td>\s*'
             r'<td class="text-right pr-3">([^<]+)</td>\s*'
@@ -966,7 +964,7 @@ def get_klse_trade_details(ticker: str, limit: int = 50) -> List[Dict[str, Any]]
         return []
 
 
-def get_klse_comments(ticker: str, limit: int = 30) -> List[Dict[str, Any]]:
+def get_klse_comments(ticker: str, limit: int = 30) -> list[dict[str, Any]]:
     """Fetch user comments/discussions for a KLSE stock.
 
     Returns list of comment dicts with metadata.
@@ -985,7 +983,7 @@ def get_klse_comments(ticker: str, limit: int = 30) -> List[Dict[str, Any]]:
         url = f"https://www.klsescreener.com/v2/comments/all/stock/{code}"
         html = fetch_url(url, f"comments_{code}")
 
-        comments: List[Dict[str, Any]] = []
+        comments: list[dict[str, Any]] = []
         comment_starts = list(re.finditer(r'id="comment-(\d+)"', html))
 
         for i, match in enumerate(comment_starts[:limit]):

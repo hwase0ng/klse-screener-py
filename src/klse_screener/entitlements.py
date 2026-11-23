@@ -6,8 +6,7 @@ Source: https://www.klsescreener.com/v2
 
 import logging
 import re
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .http import fetch_url
 from .parsers import clean_html
@@ -15,7 +14,7 @@ from .parsers import clean_html
 logger = logging.getLogger(__name__)
 
 
-def get_klse_dividend_calendar(limit: int = 50) -> List[Dict[str, Any]]:
+def get_klse_dividend_calendar(limit: int = 50) -> list[dict[str, Any]]:
     """
     Fetch market-wide dividend calendar from KLSE Screener.
 
@@ -91,7 +90,7 @@ def get_klse_dividend_calendar(limit: int = 50) -> List[Dict[str, Any]]:
         return []
 
 
-def get_klse_corporate_actions(limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_corporate_actions(limit: int = 20) -> list[dict[str, Any]]:
     """
     Fetch market-wide corporate actions from KLSE Screener.
 

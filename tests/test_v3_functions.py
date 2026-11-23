@@ -5,14 +5,13 @@ Tests only the non-deprecated functions.
 All deprecated functions have been removed.
 """
 
-import pytest
 from klse_screener import (
-    get_klse_news_raw,
     get_klse_announcements_raw,
-    get_klse_dividends_raw,
     get_klse_capital_changes_raw,
-    get_klse_warrants_raw,
+    get_klse_dividends_raw,
+    get_klse_news_raw,
     get_klse_shareholding_changes_raw,
+    get_klse_warrants_raw,
 )
 
 

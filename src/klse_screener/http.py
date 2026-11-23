@@ -10,14 +10,13 @@ Features:
 
 import time
 import urllib.request
-from typing import Dict
 
 # Rate limiting
 _MIN_INTERVAL = 2.0  # seconds between requests
 _LAST_REQUEST_TIME: float = 0.0
 
 # Cache
-_CACHE: Dict[str, dict] = {}
+_CACHE: dict[str, dict] = {}
 _CACHE_TTL = 600  # 10 minutes
 
 # Headers

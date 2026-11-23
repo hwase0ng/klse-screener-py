@@ -6,7 +6,7 @@ Source: https://www.klsescreener.com/v2
 
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .http import fetch_url
 from .parsers import clean_html
@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_klse_financial_reports(
-    ticker: Optional[str] = None,
+    ticker: str | None = None,
     limit: int = 20
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Fetch financial reports from KLSE Screener.
 
@@ -133,9 +133,9 @@ def get_klse_financial_reports(
 
 
 def get_klse_market_announcements(
-    category: Optional[str] = None,
+    category: str | None = None,
     limit: int = 50
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Fetch market-wide announcements from KLSE Screener.
 

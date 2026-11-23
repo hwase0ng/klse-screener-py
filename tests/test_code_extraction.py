@@ -6,7 +6,6 @@ Verifies that stock codes with leading zeros are preserved correctly:
 0002.KL -> "0002" (not "2")
 """
 
-import pytest
 import re
 
 

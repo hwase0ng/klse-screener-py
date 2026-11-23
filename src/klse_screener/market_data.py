@@ -14,11 +14,11 @@ Source: https://www.klsescreener.com/v2/markets
 
 import re
 from datetime import datetime, timezone
-from typing import Dict, List, Any, Optional
+from typing import Any
+
 from bs4 import BeautifulSoup
 
 from .http import fetch_url
-
 
 # ============================================================================
 # KLSE-SPECIFIC INDICES TO SCRAPE
@@ -32,7 +32,7 @@ KLSE_INDICES_CODES = {
 DEFAULT_TOP_LIMIT = 15
 
 
-def get_bursa_market_data() -> Dict[str, Any]:
+def get_bursa_market_data() -> dict[str, Any]:
     """
     Fetch Bursa Malaysia market data from klsescreener.com/v2/markets.
     
@@ -59,7 +59,7 @@ def get_bursa_market_data() -> Dict[str, Any]:
         html = fetch_url("https://www.klsescreener.com/v2/markets", "market_data")
         soup = BeautifulSoup(html, "html.parser")
         
-        result = {
+        result: dict[str, Any] = {
             "scraped_at": datetime.now(timezone.utc).isoformat(),
             "source": "klsescreener.com/v2/markets",
         }
@@ -70,49 +70,51 @@ def get_bursa_market_data() -> Dict[str, Any]:
         try:
             result["klse_indices"] = _extract_klse_indices(soup)
         except Exception as e:
-            errors.append(f"klse_indices: {str(e)}")
+            errors.append(f"klse_indices: {e!s}")
             result["klse_indices"] = []
         
         try:
             result["sector_indices"] = _extract_sector_indices(soup)
         except Exception as e:
-            errors.append(f"sector_indices: {str(e)}")
+            errors.append(f"sector_indices: {e!s}")
             result["sector_indices"] = []
         
         try:
             result["top_active"] = _extract_top_list(soup, "Top Active", limit=DEFAULT_TOP_LIMIT)
         except Exception as e:
-            errors.append(f"top_active: {str(e)}")
+            errors.append(f"top_active: {e!s}")
             result["top_active"] = []
         
         try:
-            result["top_turnover"] = _extract_top_list(soup, "Top Turnover", limit=DEFAULT_TOP_LIMIT)
+            result["top_turnover"] = _extract_top_list(
+                soup, "Top Turnover", limit=DEFAULT_TOP_LIMIT, value_key="turnover"
+            )
         except Exception as e:
-            errors.append(f"top_turnover: {str(e)}")
+            errors.append(f"top_turnover: {e!s}")
             result["top_turnover"] = []
         
         try:
             result["top_gainers"] = _extract_top_list(soup, "Top Gainers", limit=DEFAULT_TOP_LIMIT)
         except Exception as e:
-            errors.append(f"top_gainers: {str(e)}")
+            errors.append(f"top_gainers: {e!s}")
             result["top_gainers"] = []
         
         try:
             result["top_gainers_pct"] = _extract_top_list(soup, "Top Gainers %", limit=DEFAULT_TOP_LIMIT)
         except Exception as e:
-            errors.append(f"top_gainers_pct: {str(e)}")
+            errors.append(f"top_gainers_pct: {e!s}")
             result["top_gainers_pct"] = []
         
         try:
             result["top_losers"] = _extract_top_list(soup, "Top Losers", limit=DEFAULT_TOP_LIMIT)
         except Exception as e:
-            errors.append(f"top_losers: {str(e)}")
+            errors.append(f"top_losers: {e!s}")
             result["top_losers"] = []
         
         try:
             result["top_losers_pct"] = _extract_top_list(soup, "Top Losers %", limit=DEFAULT_TOP_LIMIT)
         except Exception as e:
-            errors.append(f"top_losers_pct: {str(e)}")
+            errors.append(f"top_losers_pct: {e!s}")
             result["top_losers_pct"] = []
         
         # Only add error key if everything failed
@@ -129,7 +131,7 @@ def get_bursa_market_data() -> Dict[str, Any]:
         }
 
 
-def _extract_klse_indices(soup: BeautifulSoup) -> List[Dict[str, Any]]:
+def _extract_klse_indices(soup: BeautifulSoup) -> list[dict[str, Any]]:
     """Extract KLSE-specific indices from Market Index section."""
     indices = []
     
@@ -170,7 +172,7 @@ def _extract_klse_indices(soup: BeautifulSoup) -> List[Dict[str, Any]]:
     return indices
 
 
-def _extract_sector_indices(soup: BeautifulSoup) -> List[Dict[str, Any]]:
+def _extract_sector_indices(soup: BeautifulSoup) -> list[dict[str, Any]]:
     """Extract Bursa sector indices from Bursa Index section."""
     indices = []
     
@@ -218,7 +220,9 @@ def _extract_sector_indices(soup: BeautifulSoup) -> List[Dict[str, Any]]:
     return indices
 
 
-def _extract_top_list(soup: BeautifulSoup, section_name: str, limit: int = 15) -> List[Dict[str, Any]]:
+def _extract_top_list(
+    soup: BeautifulSoup, section_name: str, limit: int = 15, value_key: str = "volume"
+) -> list[dict[str, Any]]:
     """
     Extract a top list section (Top Active, Top Gainers, etc.).
     
@@ -226,6 +230,9 @@ def _extract_top_list(soup: BeautifulSoup, section_name: str, limit: int = 15) -
         soup: BeautifulSoup object
         section_name: Section header text (e.g., "Top Active")
         limit: Maximum number of entries to return (default: 15)
+        value_key: Key for the volume/turnover value ("turnover" for the
+            Top Turnover list, "volume" for Top Active; other lists keep
+            "volume" as the generic value holder)
     
     Returns:
         List of stock data dicts
@@ -242,12 +249,12 @@ def _extract_top_list(soup: BeautifulSoup, section_name: str, limit: int = 15) -
     if not section:
         return stocks
     
-    rank = 0
-    for entry in section.find_all("div", class_="col-md-4", attrs={"data-code": True}):
-        if rank >= limit:
+    for rank, entry in enumerate(
+        section.find_all("div", class_="col-md-4", attrs={"data-code": True}), start=1
+    ):
+        if rank > limit:
             break
-        
-        rank += 1
+
         code = entry.get("data-code", "")
         
         # Extract name (remove rank prefix like "1. ")
@@ -257,8 +264,8 @@ def _extract_top_list(soup: BeautifulSoup, section_name: str, limit: int = 15) -
         
         price = _parse_float(entry.get("data-price"))
         
-        # Get volume or turnover
-        volume_elem = entry.select_one(".stock-price-col .volume")
+        # Get volume or turnover (Top Active renders .volume, Top Turnover .turnover)
+        volume_elem = entry.select_one(".stock-price-col .volume, .stock-price-col .turnover")
         volume_text = volume_elem.text.strip() if volume_elem else ""
         
         change_pct = _extract_change_pct(entry)
@@ -275,18 +282,15 @@ def _extract_top_list(soup: BeautifulSoup, section_name: str, limit: int = 15) -
             "trend": trend,
         }
         
-        # Distinguish volume vs turnover
-        if "m" in volume_text.lower():
-            stock_data["turnover"] = volume_text
-        else:
-            stock_data["volume"] = volume_text
+        # Key name follows the section, not the (fragile) text format
+        stock_data[value_key] = volume_text
         
         stocks.append(stock_data)
     
     return stocks
 
 
-def _extract_trend(trend_div: Optional[Any]) -> str:
+def _extract_trend(trend_div: Any | None) -> str:
     """Extract trend direction from CSS class."""
     if not trend_div:
         return "unchanged"
@@ -302,7 +306,7 @@ def _extract_trend(trend_div: Optional[Any]) -> str:
     return "unchanged"
 
 
-def _extract_change_pct(entry: Any) -> Optional[float]:
+def _extract_change_pct(entry: Any) -> float | None:
     """Extract percentage change from price_change span."""
     change_elem = entry.select_one("span[data-value='price_change']")
     if not change_elem:
@@ -316,7 +320,7 @@ def _extract_change_pct(entry: Any) -> Optional[float]:
     return None
 
 
-def _parse_float(value: Any) -> Optional[float]:
+def _parse_float(value: Any) -> float | None:
     """Safely parse float from string or attribute."""
     if value is None:
         return None

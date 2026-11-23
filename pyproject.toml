@@ -44,6 +44,12 @@ packages = ["src/klse_screener"]
 line-length = 100
 target-version = "py310"
 
+[tool.ruff.lint]
+# This is a scraper: every function's contract is "any failure -> error
+# dict / empty list / None", so `except Exception` (BLE001) is the design,
+# not a smell.
+ignore = ["BLE001"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"

@@ -13,9 +13,10 @@ import logging
 import re
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .http import fetch_url
+
 # KLSE-only - no market detection
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ def _parse_chart_number(value: str) -> float:
         return 0.0
 
 
-def scrape_ohlcv_raw(symbol: str, period: str = '30d') -> List[Dict[str, Any]]:
+def scrape_ohlcv_raw(symbol: str, period: str = '30d') -> list[dict[str, Any]]:
     """
     Fetch historical OHLCV data as list of dicts (pandas-free).
     
@@ -95,7 +96,7 @@ def scrape_ohlcv_raw(symbol: str, period: str = '30d') -> List[Dict[str, Any]]:
         return []
 
 
-def _scrape_30day_history(symbol: str) -> List[Dict[str, Any]]:
+def _scrape_30day_history(symbol: str) -> list[dict[str, Any]]:
     """
     Fetch 30-day historical price data.
     
@@ -168,7 +169,7 @@ def _scrape_30day_history(symbol: str) -> List[Dict[str, Any]]:
         return []
 
 
-def _scrape_10year_chart(symbol: str) -> List[Dict[str, Any]]:
+def _scrape_10year_chart(symbol: str) -> list[dict[str, Any]]:
     """
     Fetch 10-year chart data from embedded chart endpoint.
     
@@ -260,7 +261,7 @@ def _scrape_10year_chart(symbol: str) -> List[Dict[str, Any]]:
         return []
 
 
-def get_klse_price_history(symbol: str, period: str = '30d') -> Optional[Dict[str, Any]]:
+def get_klse_price_history(symbol: str, period: str = '30d') -> dict[str, Any] | None:
     """
     Fetch price history with metadata.
     

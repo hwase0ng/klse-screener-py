@@ -11,8 +11,8 @@ Source: https://www.klsescreener.com/v2
 import logging
 import re
 import time
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import date, timedelta
+from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -85,7 +85,7 @@ def _parse_quarter_from_text(period_text: str) -> tuple:
     return quarter, quarter_end_date
 
 
-def _parse_formatted_number(value: str) -> Optional[float]:
+def _parse_formatted_number(value: str) -> float | None:
     """
     Parse formatted number string to float.
     
@@ -129,7 +129,7 @@ def _parse_formatted_number(value: str) -> Optional[float]:
         return None
 
 
-def get_klse_daily_financial_reports(scrape_date: Optional[date] = None) -> List[Dict[str, Any]]:
+def get_klse_daily_financial_reports(scrape_date: date | None = None) -> list[dict[str, Any]]:
     """
     Fetch market-wide financial reports from /v2/financial-reports.
     
@@ -225,7 +225,7 @@ def get_klse_daily_financial_reports(scrape_date: Optional[date] = None) -> List
                 continue
             
             # Extract code from href
-            href = ticker_link.get('href', '')
+            href = str(ticker_link.get("href") or "")
             code_match = re.search(r'/view/(\d+)', href)
             if code_match:
                 code = code_match.group(1).zfill(4)  # Ensure 4 digits
@@ -300,7 +300,7 @@ def get_klse_daily_financial_reports(scrape_date: Optional[date] = None) -> List
         return []
 
 
-def get_klse_announcements_by_ticker(ticker: str, days_back: int = 3) -> List[Dict[str, Any]]:
+def get_klse_announcements_by_ticker(ticker: str, days_back: int = 3) -> list[dict[str, Any]]:
     """
     Fetch QR announcements for a specific ticker.
     
@@ -330,7 +330,7 @@ def get_klse_announcements_by_ticker(ticker: str, days_back: int = 3) -> List[Di
         return []
 
 
-def get_klse_financial_reports_by_ticker(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_financial_reports_by_ticker(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Fetch financial reports for a specific ticker from stock page.
     

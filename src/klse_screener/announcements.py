@@ -6,7 +6,7 @@ Source: https://www.klsescreener.com/v2
 
 import logging
 import re
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from .http import fetch_url
 from .parsers import clean_html
@@ -19,9 +19,9 @@ AnnouncementCategory = Literal["EA", "SH", "FA", "SB", "AL", "GM"]
 
 def get_klse_announcements_by_category(
     category: AnnouncementCategory,
-    ticker: Optional[str] = None,
+    ticker: str | None = None,
     limit: int = 20
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Fetch announcements by category from KLSE Screener.
 
@@ -113,7 +113,7 @@ def get_klse_announcements_by_category(
 # ============= Convenience Wrapper Functions =============
 
 
-def get_klse_dividend_announcements(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_dividend_announcements(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get dividend-related announcements (EA category) for a stock.
 
@@ -129,7 +129,7 @@ def get_klse_dividend_announcements(ticker: str, limit: int = 20) -> List[Dict[s
     return get_klse_announcements_by_category("EA", ticker, limit)
 
 
-def get_klse_insider_dealings(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_insider_dealings(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get insider dealings announcements (SH category) for a stock.
 
@@ -145,7 +145,7 @@ def get_klse_insider_dealings(ticker: str, limit: int = 20) -> List[Dict[str, An
     return get_klse_announcements_by_category("SH", ticker, limit)
 
 
-def get_klse_financial_results(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_financial_results(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get financial results announcements (FA category) for a stock.
 
@@ -161,7 +161,7 @@ def get_klse_financial_results(ticker: str, limit: int = 20) -> List[Dict[str, A
     return get_klse_announcements_by_category("FA", ticker, limit)
 
 
-def get_klse_share_buybacks(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_share_buybacks(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get share buyback announcements (SB category) for a stock.
 
@@ -177,7 +177,7 @@ def get_klse_share_buybacks(ticker: str, limit: int = 20) -> List[Dict[str, Any]
     return get_klse_announcements_by_category("SB", ticker, limit)
 
 
-def get_klse_additional_listings(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_additional_listings(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get additional listing announcements (AL category) for a stock.
 
@@ -193,7 +193,7 @@ def get_klse_additional_listings(ticker: str, limit: int = 20) -> List[Dict[str,
     return get_klse_announcements_by_category("AL", ticker, limit)
 
 
-def get_klse_general_meetings(ticker: str, limit: int = 20) -> List[Dict[str, Any]]:
+def get_klse_general_meetings(ticker: str, limit: int = 20) -> list[dict[str, Any]]:
     """
     Get general meeting announcements (GM category) for a stock.
 

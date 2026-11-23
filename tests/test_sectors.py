@@ -1,6 +1,14 @@
 """Tests for KLSE sector stock scraping."""
 import pytest
-from klse_screener.sectors import KLSE_SECTOR_CODES, SECTOR_URL_BASE
+
+from klse_screener.sectors import (
+    KLSE_SECTOR_CODES,
+    SECTOR_URL_BASE,
+    _parse_sector_stocks_html,
+    get_klse_all_sector_stocks,
+    get_klse_sector_info,
+    get_klse_sector_stocks,
+)
 
 
 class TestSectorConstants:
@@ -21,9 +29,6 @@ class TestSectorConstants:
     def test_known_sector_present(self):
         assert "0001I" in KLSE_SECTOR_CODES
         assert "CONSUMER" in KLSE_SECTOR_CODES["0001I"].upper()
-
-
-from klse_screener.sectors import _parse_sector_stocks_html
 
 
 class TestParseSectorStocksHtml:
@@ -124,13 +129,6 @@ class TestParseSectorStocksHtml:
         stocks = _parse_sector_stocks_html(html)
         assert len(stocks) == 1
         assert stocks[0]["change_pct"] == "-2.0%"
-
-
-from klse_screener.sectors import (
-    get_klse_sector_stocks,
-    get_klse_all_sector_stocks,
-    get_klse_sector_info,
-)
 
 
 class TestGetKlseSectorInfo:

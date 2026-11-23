@@ -12,9 +12,7 @@ Source: https://www.klsescreener.com/v2
 
 import logging
 import re
-import time
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -33,7 +31,7 @@ def _extract_code(ticker: str) -> str:
     return code or ticker
 
 
-def _parse_formatted_number(value: str) -> Optional[float]:
+def _parse_formatted_number(value: str) -> float | None:
     """
     Parse formatted number string to float.
     
@@ -90,7 +88,7 @@ def _clean_html_text(text: str) -> str:
     return clean.strip()
 
 
-def _percent_sign_class(cell: Any) -> Optional[int]:
+def _percent_sign_class(cell: Any) -> int | None:
     """Direction of a percentage cell, encoded only in its CSS class.
 
     KLSE Screener prints QoQ%/YoY% as *unsigned* magnitudes ("29.1%") and encodes
@@ -113,7 +111,7 @@ def _percent_sign_class(cell: Any) -> Optional[int]:
     return None
 
 
-def _apply_percent_sign(value: Optional[float], sign: Optional[int]) -> Optional[float]:
+def _apply_percent_sign(value: float | None, sign: int | None) -> float | None:
     """Apply a class-derived sign to an already-parsed magnitude.
 
     The class is authoritative: a classed QoQ%/YoY% cell is unsigned by
@@ -129,7 +127,7 @@ def _apply_percent_sign(value: Optional[float], sign: Optional[int]) -> Optional
     return sign * abs(value)
 
 
-def get_klse_key_ratios(ticker: str) -> Dict[str, Any]:
+def get_klse_key_ratios(ticker: str) -> dict[str, Any]:
     """
     Fetch key ratios for a KLSE stock from KLSE Screener.
     
@@ -165,7 +163,7 @@ def get_klse_key_ratios(ticker: str) -> Dict[str, Any]:
             logger.warning(f"No HTML content for {ticker}")
             return {}
         
-        result: Dict[str, Any] = {"data_source": "klsescreener_key_ratios"}
+        result: dict[str, Any] = {"data_source": "klsescreener_key_ratios"}
         
         # Company name
         name_match = re.search(r"<h5[^>]*>\s*(\w[\w\s&.()-]+?)(?:</h5>|<)", html)
@@ -219,7 +217,7 @@ def get_klse_key_ratios(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
+def get_klse_quarterly_financials_dict(ticker: str) -> dict[str, Any]:
     """
     Fetch quarterly financials with TTM calculations.
     
@@ -265,7 +263,7 @@ def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
             logger.warning(f"No HTML content for {ticker}")
             return {}
         
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "data_source": "klsescreener_quarterly",
             "quarterly_data": [],
             "ttm_revenue": None,
@@ -384,7 +382,7 @@ def get_klse_quarterly_financials_dict(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_annual_financials_dict(ticker: str) -> Dict[str, Any]:
+def get_klse_annual_financials_dict(ticker: str) -> dict[str, Any]:
     """
     Fetch annual financials for a KLSE stock.
     
@@ -422,7 +420,7 @@ def get_klse_annual_financials_dict(ticker: str) -> Dict[str, Any]:
             logger.warning(f"No HTML content for {ticker}")
             return {}
         
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "data_source": "klsescreener_annual",
             "annual_data": [],
         }
@@ -501,7 +499,7 @@ def get_klse_annual_financials_dict(ticker: str) -> Dict[str, Any]:
         return {}
 
 
-def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
+def get_klse_fundamentals_mf_enhanced(ticker: str) -> dict[str, Any]:
     """
     Fetch all available fundamental data for a KLSE stock.
     
@@ -523,7 +521,7 @@ def get_klse_fundamentals_mf_enhanced(ticker: str) -> Dict[str, Any]:
         annual = get_klse_annual_financials_dict(ticker)
         
         # Consolidate
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "data_source": "klsescreener_mf_enhanced",
             "ticker": ticker,
             "market_cap": key_ratios.get("market_cap"),
@@ -560,7 +558,7 @@ def get_klse_financial_report_figures(
     code: str,
     quarter_end_date: str,
     return_html: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Fetch P&L figures from a KLSE Screener financial-report page.
 
@@ -664,7 +662,7 @@ def get_klse_financial_report_figures(
         # label and take cells[label_idx + 1] - robust to AI-insight rows and to
         # either header layout.
 
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "data_source": "klsescreener_financial_report",
             "profit_before_tax": None,
             "profit_attributable_parent": None,
@@ -713,7 +711,7 @@ def get_klse_financial_report_figures(
 
 
 # Convenience alias for backward compatibility with project
-def get_klse_fundamentals(ticker: str) -> Dict[str, Any]:
+def get_klse_fundamentals(ticker: str) -> dict[str, Any]:
     """
     Alias for get_klse_fundamentals_mf_enhanced().
     
