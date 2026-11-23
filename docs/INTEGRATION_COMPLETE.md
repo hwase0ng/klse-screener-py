@@ -222,8 +222,8 @@ get_klse_annual_financials_dict()     # → Dict (programmatic)
 
 ## Contact & Support
 
-- **Repository:** https://github.com/klse-screener-py
-- **Issues:** https://github.com/klse-screener-py/issues
+- **Repository:** https://github.com/hwase0ng/klse-screener-py
+- **Issues:** https://github.com/hwase0ng/klse-screener-py/issues
 - **Migration Guide:** `docs/MIGRATION_TO_V2.md`
 - **Maintainers:** hwaseong
 

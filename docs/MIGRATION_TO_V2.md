@@ -283,8 +283,8 @@ data = get_klse_fundamentals_combined("5132.KL")  # Has TTM
 
 ## Getting Help
 
-- **Documentation:** https://github.com/klse-screener-py/README.md
-- **Issues:** https://github.com/klse-screener-py/issues
+- **Documentation:** https://github.com/hwase0ng/klse-screener-py/README.md
+- **Issues:** https://github.com/hwase0ng/klse-screener-py/issues
 - **Migration Examples:** See `examples/` directory in repository
 
 ## Summary
