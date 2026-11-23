@@ -208,6 +208,11 @@ ruff check src/ tests/
 
 ## Changelog
 
+### 3.4.2 (2026-11-23)
+- Redacted a third-party Google API key and Firebase project id captured in
+  `tests/fixtures/financial_report_0012_quarterly.html` (public client-side
+  credentials from the scraped page, not project secrets)
+
 ### 3.4.1 (2026-11-23)
 - Fixed `project.urls` (Homepage/Repository) pointing at the wrong GitHub org
 - Fixed the same wrong URLs in `docs/MIGRATION_TO_V2.md` and `docs/INTEGRATION_COMPLETE.md`
